@@ -1,0 +1,1 @@
+n=int(input());a=[input() for _ in range(n)];print(sum([1<<i if a[n-1-i]=='O' else 0 for i in range(len(a))]))
