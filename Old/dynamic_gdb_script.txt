@@ -1,0 +1,12 @@
+break phase_6
+break explode_bomb
+run solutions.txt
+set args 1 2 3 4 5 6
+if $_breakpoint == 2
+  kill
+end
+set args 6 5 4 3 2 1
+run solutions.txt
+if $_breakpoint == 2
+  c
+end

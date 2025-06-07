@@ -1,8 +1,8 @@
-OAs/*
-Interviews/*
-.vscode/*
-*/a.out
-*/delete.txt
+OAs/
+Interviews/
+.vscode/
+a.out
+delete.txt
 *.in
 *.out
 *.DS_Store
