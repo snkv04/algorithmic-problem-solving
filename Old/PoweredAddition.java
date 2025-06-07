@@ -1,0 +1,64 @@
+import java.util.*;
+import java.io.*;
+
+public class PoweredAddition {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        PrintWriter pw = new PrintWriter(System.out);
+
+        int t = Integer.parseInt(br.readLine());
+        while (t-->0) {
+            int n = Integer.parseInt(br.readLine());
+            int[] a = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            int[] max = new int[n], min = new int[n];
+            max[0] = a[0]; min[n-1] = a[n-1];
+            for (int i = 1; i <= n-1; i++) {
+                max[i] = Math.max(max[i-1], a[i]);
+                min[n-1-i] = Math.min(min[n-i], a[n-1-i]);
+            }
+
+            long maxDiff = 0;
+            for (int i = 0; i <= n-2; i++) {
+                maxDiff = Math.max(maxDiff, Math.max(0, max[i] - min[i+1]));
+            }
+
+            if (maxDiff == 0) {
+                pw.println(0);
+                continue;
+            }
+            long increments = 0;
+            while ((((long)1)<<increments) <= maxDiff) increments++;
+            pw.println(increments);
+        }
+
+        br.close(); pw.close();
+    }
+
+    // // // //
+
+    static class Multiset {
+        TreeMap<Integer, Integer> mset = new TreeMap<>();
+
+        public void add(int x) {
+            if (mset.containsKey(x)) {
+                mset.put(x, mset.get(x) + 1);
+            } else {
+                mset.put(x, 1);
+            }
+        }
+        
+        public void remove(int x) {
+            mset.put(x, mset.get(x) - 1);
+            if (mset.get(x) == 0) mset.remove(x);
+        }
+
+        public void add(int x, int q) {
+            // q for quantity
+            if (mset.containsKey(x)) {
+                mset.put(x, mset.get(x) + q);
+            } else {
+                mset.put(x, q);
+            }
+        }
+    }
+}
