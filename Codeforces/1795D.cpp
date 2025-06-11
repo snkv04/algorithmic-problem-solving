@@ -2,8 +2,28 @@
 using namespace std;
 
 using ll = long long;
-int MOD = (int) 1e9 + 7; // 998244353;
+int MOD = 998244353;
 int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
+
+ll pow(ll base, ll exp, ll mod) {
+    if (exp == 0) return 1;
+    ll result = pow(base, exp / 2, mod);
+    result *= result;
+    result %= mod;
+    if (exp % 2) {
+        result *= base;
+        result %= mod;
+    }
+    return result;
+}
+
+ll mod_inv(ll num, ll mod) {
+    return pow(num, mod - 2, mod);
+}
+
+ll div(ll a, ll b, ll mod) {
+    return (a * mod_inv(b, mod)) % mod;
+}
 
 template <typename Container>
 void print_container(const Container &c, string prefix = "", std::ostream &os = std::cout) {
@@ -81,6 +101,35 @@ public:
 void solve() {
     int n;
     cin >> n;
+
+    vector<ll> fact(n/3+1, 1);
+    for (int i = 1; i <= n/3; ++i) {
+        fact[i] = fact[i-1] * i;
+        fact[i] %= MOD;
+    }
+
+    ll ans = fact[n/3];
+    ans = div(ans, fact[n/6], MOD);
+    ans = div(ans, fact[n/6], MOD);
+    // print_container(fact);
+    // cout << "ans = " << ans << "\n";
+    
+    while (n) {
+        n -= 3;
+        vector<int> a(3);
+        for (int i = 0; i < 3; ++i) cin >> a[i];
+        sort(a.begin(), a.end());
+        if (a[0] == a[1] && a[1] == a[2]) {
+            ans *= 3;
+        } else if (a[0] == a[1]) {
+            ans *= 2;
+        } else {
+            ans *= 1;
+        }
+        ans %= MOD;
+    }
+    
+    cout << ans << "\n";
 }
 
 int main() {
