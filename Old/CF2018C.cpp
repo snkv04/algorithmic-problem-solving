@@ -56,12 +56,15 @@ void solve() {
     at each node).
 
     what's a key idea from this solution?
-    instead of viewing it as a problem of finding all nodes that remain in the tree for each
+    - instead of viewing it as a problem of finding all nodes that remain in the tree for each
     given depth, we can reverse the perspective and find all depths that allow each node to
     remain in the tree. for a given node, if d is too small then the node will be too far
     down and will be part of the bottom portio of the tree that will be cut off, and if d
     is too large then the node doesn't have any descendant at level d that justifies it staying
     in the tree so then it will get pulled off.
+    - instead of iterating over all values of x and seeing which elements from y satisfy
+    the current x, first decide for each y which values of x it satisfies, then iterate through
+    x by jumping between the endpoints of those intervals
     */
 
     int n;
