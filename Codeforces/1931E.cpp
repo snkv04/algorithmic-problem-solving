@@ -85,8 +85,39 @@ public:
 };
 
 void solve() {
-    int n;
-    cin >> n;
+    int n, m;
+    cin >> n >> m;
+
+    vector<pair<int, int>> digit_pairs;
+    for (int i = 0; i < n; ++i) {
+        int digits = 0, trailing_zeros = 0;
+        bool has_reached_nonzero = false;
+        int ai;
+        cin >> ai;
+        while (ai) {
+            int digit = ai % 10;
+            ai /= 10;
+            if (digit) {
+                has_reached_nonzero = true;
+            }
+
+            ++digits;
+            if (!has_reached_nonzero) ++trailing_zeros;
+        }
+        digit_pairs.push_back(make_pair(trailing_zeros, digits));
+    }
+    sort(digit_pairs.begin(), digit_pairs.end(), [](pair<int, int> p1, pair<int, int> p2) {
+        return p1.first > p2.first;
+    });
+    // print_container(digit_pairs, "digit_pairs = ");
+
+    int final_digits = 0;
+    for (int i = 0; i < n; ++i) {
+        pair<int, int> digit_pair = digit_pairs[i];
+        if (i % 2) final_digits += digit_pair.second;
+        else final_digits += digit_pair.second - digit_pair.first;
+    }
+    cout << (final_digits > m ? "Sasha" : "Anna") << "\n";
 }
 
 int main() {
@@ -95,7 +126,7 @@ int main() {
     cout.tie(nullptr);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
