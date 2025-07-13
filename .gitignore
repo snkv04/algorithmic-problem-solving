@@ -2,6 +2,7 @@ OAs/
 Interviews/
 .vscode/
 delete.txt
+del
 *.in
 *.out
 *.DS_Store
