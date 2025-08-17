@@ -1,8 +1,12 @@
 OAs/
 Interviews/
 .vscode/
+
 delete.txt
 del
+test.cpp
+run_tests.sh
+
 *.in
 *.out
 *.DS_Store
