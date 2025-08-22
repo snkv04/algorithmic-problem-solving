@@ -58,38 +58,44 @@ struct TreeEqual {
     }
 };
 
-TreeLoc convert(int dir, const TreeLoc &t) {
-    ll dx = t.x, dy = t.y;
+struct PairHash {
+    size_t operator()(const pair<int, int> &p) const {
+        ll newx = p.first + bound, newy = p.second + bound;
+        return (totalrange * newx) + newy;
+    }
+};
+
+pair<int, int> operator+(const pair<int, int> &p1, const pair<int, int> &p2) {
+    return make_pair(p1.first + p2.first, p1.second + p2.second);
+}
+
+pair<int, int> operator-(const pair<int, int> &p1, const pair<int, int> &p2) {
+    return make_pair(p1.first - p2.first, p1.second - p2.second);
+}
+
+pair<int, int> convert(int dir, const pair<int, int> &p) {
+    int dx = p.first, dy = p.second;
     if (dir == 0) {
-        return TreeLoc(dx, dy);
+        return make_pair(dx, dy);
     } else if (dir == 1) {
-        return TreeLoc(-dy, dx);
+        return make_pair(-dy, dx);
     } else if (dir == 2) {
-        return TreeLoc(-dx, -dy);
+        return make_pair(-dx, -dy);
     } else {
-        return TreeLoc(dy, -dx);
+        return make_pair(dy, -dx);
     }
 }
 
-ll taxi(const TreeLoc &t1, const TreeLoc &t2) {
-    return max(t2.x - t1.x, t1.x - t2.x) + max(t2.y - t1.y, t1.y - t2.y);
+int taxi(const pair<int, int> &p1, const pair<int, int> &p2) {
+    int x1 = p1.first, y1 = p1.second, x2 = p2.first, y2 = p2.second;
+    return max(x2 - x1, x1 - x2) + max(y2 - y1, y1 - y2);
 }
 
-// ll toid(pair<ll, ll> &p) {
-//     ll newx = p.first + bound, newy = p.second + bound;
-//     return (totalrange * newx) + newy;
-// }
-
-// pair<ll, ll> fromid(ll id) {
-//     ll newx = id / totalrange, newy = id % totalrange;
-//     return make_pair(newx - bound, newy - bound);
-// }
-
 bool check_anchor(
-    const TreeLoc &anchor,
+    const pair<int, int> &anchor,
     int dir,
-    unordered_set<TreeLoc, TreeHash, TreeEqual> &sensed,
-    unordered_set<TreeLoc, TreeHash, TreeEqual> &forest,
+    unordered_set<pair<int, int>, PairHash> &sensed,
+    unordered_set<pair<int, int>, PairHash> &forest,
     int rmax
 ) {
     // cout << "\nanchor: " << anchor << ", dir = " << dir << "\n";
@@ -99,8 +105,8 @@ bool check_anchor(
     }
 
     // // gather all trees within distance
-    // unordered_set<TreeLoc, TreeHash, TreeEqual> inrange;
-    // for (const TreeLoc &tree : forest) {
+    // unordered_set<pair<int, int>, PairHash> inrange;
+    // for (const pair<int, int> &tree : forest) {
     //     if (taxi(tree, anchor) <= rmax) {
     //         inrange.insert(tree);
     //     }
@@ -108,9 +114,9 @@ bool check_anchor(
 
     // if (inrange.size() == sensed.size()) {
     //     bool works = true;
-    //     for (const TreeLoc &senseddirection : sensed) {
-    //         TreeLoc converted = convert(dir, senseddirection);
-    //         TreeLoc treeloc = anchor + converted;
+    //     for (const pair<int, int> &senseddirection : sensed) {
+    //         pair<int, int> converted = convert(dir, senseddirection);
+    //         pair<int, int> treeloc = anchor + converted;
     //         if (inrange.find(treeloc) != inrange.end()) {
     //             inrange.erase(treeloc);
     //         } else {
@@ -122,10 +128,10 @@ bool check_anchor(
     //     return false;
     // }
 
-    unordered_set<TreeLoc, TreeHash, TreeEqual> found;
-    for (const TreeLoc &delta : sensed) {
-        TreeLoc converted = convert(dir, delta);
-        TreeLoc expected = converted + anchor;
+    unordered_set<pair<int, int>, PairHash> found;
+    for (const pair<int, int> &delta : sensed) {
+        pair<int, int> converted = convert(dir, delta);
+        pair<int, int> expected = converted + anchor;
         // cout << "checking if expected " << expected << " is a tree\n";
         if (forest.find(expected) != forest.end()) {
             // cout << "is\n";
@@ -142,8 +148,8 @@ bool check_anchor(
         return false;
     }
 
-    for (const TreeLoc &tree2 : forest) {
-        if (taxi(tree2, anchor) <= rmax && found.find(tree2) == found.end()) {
+    for (const pair<int, int> &tree : forest) {
+        if (taxi(tree, anchor) <= rmax && found.find(tree) == found.end()) {
             // cout << "found tree " << tree2 << " that wasn't already sensed, returning false\n";
             return false;
         }
@@ -160,16 +166,16 @@ void solve() {
         return;
     }
 
-    unordered_set<TreeLoc, TreeHash, TreeEqual> forest;
-    unordered_set<TreeLoc, TreeHash, TreeEqual> sensed(ns);
+    unordered_set<pair<int, int>, PairHash> forest;
+    unordered_set<pair<int, int>, PairHash> sensed(ns);
     for (int i = 0; i < nt + ns; ++i) {
         ll x, y;
         cin >> x >> y;
-        TreeLoc t(x, y);
+        pair<int, int> p = make_pair(x, y);
         if (i < nt) {
-            forest.insert(t);
+            forest.insert(p);
         } else {
-            sensed.insert(t);
+            sensed.insert(p);
         }
     }
     // cout << "forest:\n";
@@ -179,10 +185,10 @@ void solve() {
 
     bool possible = false;
     int ansx = -1, ansy = -1;
-    for (const TreeLoc &tree : forest) {
+    for (const pair<int, int> &tree : forest) {
         for (int j = 0; j < 4; ++j) {
-            TreeLoc convertedfirst = convert(j, *sensed.begin());
-            TreeLoc anchor = tree - convertedfirst;
+            pair<int, int> convertedfirst = convert(j, *sensed.begin());
+            pair<int, int> anchor = tree - convertedfirst;
             // cout << "tree = " << tree << ", convertedfirst = " << convertedfirst << ", anchor = " << anchor << endl;
 
             if (check_anchor(anchor, j, sensed, forest, rmax)) {
@@ -192,8 +198,8 @@ void solve() {
                 } else {
                     // cout << "setting answer to " << anchor << '\n';
                     possible = true;
-                    ansx = anchor.x;
-                    ansy = anchor.y;
+                    ansx = anchor.first;
+                    ansy = anchor.second;
                 }
             }
             // cout << "right now, ansx = " << ansx << ", ansy = " << ansy << "\n";
