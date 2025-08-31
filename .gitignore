@@ -1,12 +1,15 @@
+# Folders
 OAs/
 Interviews/
 .vscode/
 
+# Files
 delete.txt
 del
 test.cpp
 run_tests.sh
 
+# File types
 *.in
 *.out
 *.DS_Store
