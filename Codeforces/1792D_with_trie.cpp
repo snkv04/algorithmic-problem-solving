@@ -84,45 +84,71 @@ public:
     }
 };
 
-struct Cmp {
-    bool operator()(const int a, const int b) const {
-        return a > b;
+template <int N>
+struct TrieNode {
+    array<TrieNode*, N> children;
+    bool end;
+};
+
+template <int N>
+struct Trie {
+    TrieNode<N> root;
+
+    Trie() : root() {}
+
+    void insert(vector<int> &arr) {
+        TrieNode<N> *curr = &root;
+        for (int i = 0; i < arr.size(); ++i) {
+            if (curr->children[arr[i]] == nullptr) {
+                curr->children[arr[i]] = new TrieNode<N>();
+            }
+            curr = curr->children[arr[i]];
+        }
+        curr->end = true;
+    }
+
+    int longest_common_prefix(vector<int> &arr) {
+        int length = 0;
+        TrieNode<N> *curr = &root;
+        while (length < arr.size()) {
+            if (curr->children[arr[length]] == nullptr) {
+                break;
+            } else {
+                curr = curr->children[arr[length++]];
+            }
+        }
+        return length;
     }
 };
 
 void solve() {
     /*
-    - the key pattern here is that we iterate through potions from left to right and, each time that we
-    can't use the current element, replace one of the previous elements with the current one if possible.
-    the same vague idea is used for computing the longest increasing subsequence (LIS) in O(n * log(n))
+    - keep in mind that an array of things will be default-initialized (initialized to garbage values),
+    not value-initialized (initialized to "0" values). so, when constructing a trie where each node
+    (especially the root node) has an array of pointers to children, make sure that the root of the trie
+    (or just every node, but definitely at least the root) is initialized properly. if not, all of its
+    children pointers will be garbage addresses, not nullptr.
     */
 
-    int n;
-    cin >> n;
-    
-    priority_queue<
-        int,
-        vector<int>,
-        Cmp
-    > pq;
-    long long health = 0;
-    while (n--) {
-        int ai;
-        cin >> ai;
-        if (health + ai >= 0) {
-            pq.push(ai);
-            health += ai;
-        } else {
-            if (pq.size() && pq.top() < ai) {
-                health -= pq.top();
-                pq.pop();
+    int n, m;
+    cin >> n >> m;
 
-                health += ai;
-                pq.push(ai);
-            }
+    vector<vector<int>> a(n, vector<int>(m));
+    Trie<10> trie;
+    for (int i = 0; i < n; ++i) {
+        vector<int> inv(m);
+        for (int j = 0; j < m; ++j) {
+            cin >> a[i][j];
+            --a[i][j];
+            inv[a[i][j]] = j;
         }
+        trie.insert(inv);
     }
-    cout << pq.size() << "\n";
+
+    for (int i = 0; i < n; ++i) {
+        cout << trie.longest_common_prefix(a[i]) << " ";
+    }
+    cout << "\n";
 }
 
 int main() {
@@ -131,7 +157,7 @@ int main() {
     cout.tie(nullptr);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
