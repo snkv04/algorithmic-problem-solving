@@ -129,8 +129,26 @@ public:
 };
 
 void solve() {
-    int n;
-    cin >> n;
+    string s;
+    cin >> s;
+    RollingHash hash(s);
+
+    int n = s.size();
+    int l = 0, r = n-1, l2 = 0, r2 = n-1;
+    int ans = 0;
+    while (l2 < r2) {
+        if (hash.get_hash(l, l2 + 1) == hash.get_hash(r2, r + 1)) {
+            ans += 2;
+            l = l2 + 1;
+            r = r2 - 1;
+        }
+        ++l2;
+        --r2;
+    }
+    if (l <= r) {
+        ++ans;
+    }
+    cout << ans << "\n";
 }
 
 int main() {
