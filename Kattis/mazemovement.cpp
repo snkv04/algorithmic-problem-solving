@@ -159,7 +159,7 @@ int gcd(int a, int b) {
 
 bool bfs_level(int s, int t) {
     dep = vector<int>(n, -1);
-    for (int i = 0; i < n; ++i) e1[i].clear();
+    e1 = vector<vector<Edge*>>(n);
     queue<int> q;
     q.push(s);
     dep[s] = 0;
@@ -245,13 +245,24 @@ void solve() {
         for (int j = i+1; j < n; ++j) {
             int g = gcd(a[i], a[j]);
             if (g > 1) {
-                add_edge(i, j, g);
-                add_edge(j, i, g);
+                // no incoming edges for the source and no outgoing edges for the sink
+                if (i != t && j != s) {
+                    add_edge(i, j, g);
+                }
+                if (j != t && i != s) {
+                    add_edge(j, i, g);
+                }
             }
         }
     }
 
     int maxflow = dinic(s, t);
+    // cout << "edges:\n";
+    // for (int i = 0; i < n; ++i) {
+    //     for (Edge *edge : e[i]) {
+    //         cout << "u="<<a[i]<<", v="<<a[edge->v]<<", cap="<<edge->cap<<", flow="<<edge->flow<<'\n';
+    //     }
+    // }
     cout << maxflow << "\n";
 }
 
