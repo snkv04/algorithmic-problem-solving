@@ -5,6 +5,13 @@ using ld = long double;
 
 int MOD = (int) 1e9 + 7; // 998244353;
 int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
+const int MAXN = 2e5 + 5;
+vector<pair<int, int>> adj[MAXN];
+int n, m;
+int maxpow;
+vector<int> depth;
+vector<bool> visited;
+vector<vector<int>> ancestor, maxedge;
 
 template <typename T1, typename T2>
 std::ostream& operator<<(std::ostream &os, const std::pair<T1, T2> &p) {
@@ -130,17 +137,14 @@ public:
 };
 
 struct DSU {
-private:
     int n;
-    vector<int> parent, size;
+    vector<int> parent;
 
-public:
     DSU(int n) : n(n) {
         parent.resize(n);
         for (int i = 0; i < n; ++i) {
             parent[i] = i;
         }
-        size = vector<int>(n, 1);
     }
 
     int find(int node) {
@@ -152,14 +156,132 @@ public:
         int c = find(a), d = find(b);
         if (c != d) {
             parent[d] = c;
-            size[c] += size[d];
         }
     }
 };
 
+void dfs(int node) {
+    visited[node] = true;
+    for (pair<int, int> next : adj[node]) {
+        int nextnode = next.first, weight = next.second;
+        if (!visited[nextnode]) {
+            depth[nextnode] = depth[node] + 1;
+            ancestor[nextnode][0] = node;
+            maxedge[nextnode][0] = weight;
+            dfs(nextnode);
+        }
+    }
+}
+
+void build_lca() {
+    maxpow = ceil(log2(n));
+    depth = vector<int>(n, 0);
+    visited = vector<bool>(n, false);    
+    ancestor = vector<vector<int>>(n, vector<int>(maxpow + 1, -1));
+    maxedge = vector<vector<int>>(n, vector<int>(maxpow + 1, -1));    
+    depth[0] = 0;
+    dfs(0);
+
+    for (int i = 1; i <= maxpow; ++i) {
+        for (int j = 0; j < n; ++j) {
+            int halfway = ancestor[j][i-1];
+            if (halfway != -1) {
+                ancestor[j][i] = ancestor[halfway][i-1];
+                if (ancestor[j][i] != -1) {
+                    maxedge[j][i] = max(maxedge[j][i-1], maxedge[halfway][i-1]);
+                }
+            }
+        }
+    }
+}
+
+pair<int, int> get_ancestor(int i, int k) {
+    if (k >= n) return {-1, -1e9};
+
+    int curr = i, maxweight = -1e9;
+    for (int b = 0; b <= maxpow; ++b) {
+        if ((1 << b) & k) {
+            maxweight = max(maxweight, maxedge[curr][b]);
+            curr = ancestor[curr][b];
+        }
+
+        if (curr == -1) return {-1, -1e9};
+    }
+    return {curr, maxweight};
+}
+
+int max_on_path(int a, int b) {
+    pair<int, int> p{-1, -1e9};
+    if (depth[a] > depth[b]) {
+        int diff = depth[a] - depth[b];
+        p = get_ancestor(a, diff);
+        a = p.first;
+    }
+    if (depth[b] > depth[a]) {
+        int diff = depth[b] - depth[a];
+        p = get_ancestor(b, diff);
+        b = p.first;
+    }
+    if (a == b) {
+        return p.second;
+    }
+
+    for (int pow = maxpow; pow >= 0; --pow) {
+        if (ancestor[a][pow] != ancestor[b][pow]) {
+            p.second = max({p.second, maxedge[a][pow], maxedge[b][pow]});
+            a = ancestor[a][pow];
+            b = ancestor[b][pow];
+        }
+    }
+    p.second = max({p.second, maxedge[a][0], maxedge[b][0]});
+    return p.second;
+}
+
 void solve() {
-    int n;
-    cin >> n;
+    /*
+    - read in edges
+    - construct MST, getting both the final sum and constructing the adjacency list
+    - using the adjacency list, do a DFS and get the LCA info
+        - the parents info as well as the max edge weight on the path to those parents
+    - now, for each edge, remove max edge from MST and add that edge, then output new sum
+    */
+
+    cin >> n >> m;
+    vector<vector<int>> edges(m, vector<int>(3)), byweight(m, vector<int>(3));
+    for (int i = 0; i < m; ++i) {
+        cin >> edges[i][0] >> edges[i][1] >> edges[i][2];
+        --edges[i][0];
+        --edges[i][1];
+        byweight[i] = edges[i];
+    }
+    sort(byweight.begin(), byweight.end(), [] (vector<int> &v1, vector<int> &v2) {
+        return v1[2] < v2[2];
+    });
+
+    DSU dsu(n);
+    ll mst = 0;
+    for (int i = 0; i < m; ++i) {
+        int a = byweight[i][0], b = byweight[i][1], w = byweight[i][2];
+        if (dsu.find(a) != dsu.find(b)) {
+            dsu.join(a, b);
+            adj[a].push_back({b, w});
+            adj[b].push_back({a, w});
+            // cout << "adding edge (" << a << ", " << b << ") with weight " << w << "\n";
+            mst += w;
+        }
+    }
+
+    build_lca();
+    // for (int i = 0; i < n; ++i) {
+    //     cout << "i="<<i<<":\n";
+    //     print_container(ancestor[i], "\t ancestor: ");
+    //     print_container(maxedge[i], "\t maxedge: ");
+    // }
+
+    for (int i = 0; i < m; ++i) {
+        int a = edges[i][0], b = edges[i][1], w = edges[i][2];
+        cout << mst - max_on_path(a, b) + w << "\n";
+    }
 }
 
 int main() {
