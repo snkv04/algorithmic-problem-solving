@@ -130,8 +130,52 @@ public:
 };
 
 void solve() {
-    int n;
-    cin >> n;
+    int n, m;
+    cin >> n >> m;
+
+    vector<vector<int>> adj(n);
+    while (m--) {
+        int a, b;
+        cin >> a >> b;
+        --a; --b;
+        adj[a].push_back(b);
+        adj[b].push_back(a);
+    }
+
+    vector<int> dist(n, 1e9), prev(n, -1);
+    dist[0] = 0;
+    queue<int> q;
+    q.push(0);
+    while (q.size()) {
+        int node = q.front();
+        q.pop();
+
+        for (int next : adj[node]) {
+            if (dist[next] > dist[node] + 1) {
+                dist[next] = dist[node] + 1;
+                prev[next] = node;
+                q.push(next);
+            }
+        }
+    }
+
+    if (prev[n-1] == -1) {
+        cout << "IMPOSSIBLE\n";
+        return;
+    }
+
+    stack<int> path;
+    int curr = n-1;
+    while (curr != -1) {
+        path.push(curr);
+        curr = prev[curr];
+    }
+    cout << path.size() << "\n";
+    while (path.size()) {
+        int node = path.top() + 1;
+        path.pop();
+        cout << node << " ";
+    }
 }
 
 int main() {
