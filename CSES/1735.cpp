@@ -29,18 +29,28 @@ std::istream& operator>>(std::istream &is, std::vector<T> &v) {
     return is;
 }
 
+struct Update {
+    int type; // type 1 is add, type 2 is set
+    ll val;
+
+    Update() : type(1), val(0) {}
+
+    Update(int t, int val) : type(t), val(val) {}
+};
+
 struct SegmentTree {
 private:
     int n;
     vector<ll> t;
+    vector<Update> pending;
     vector<int> a;
 
 public:
     SegmentTree(const vector<int> &arr) {
         n = arr.size();
         a = arr;
-        t.resize(4 * n);
-        fill(t.begin(), t.end(), 0);
+        t = vector<ll>(4*n, 0);
+        pending = vector<Update>(4*n);
         build(1, 0, n - 1);
     }
 
@@ -53,10 +63,40 @@ public:
         int m = l + (r - l) / 2;
         build(2 * v, l, m);
         build(2 * v + 1, m + 1, r);
-        t[v] = t[2 * v] + t[2 * v + 1];
+        t[v] = t[2*v] + t[2*v+1];
+    }
+
+    void combine(int v, Update &u) { // u is passed from parent
+        if (u.type == 2) {
+            pending[v] = u;
+        } else {
+            pending[v].val += u.val;
+        }
+    }
+
+    void pushdown(int v, int l, int r) {
+        if (!(pending[v].type == 1 && pending[v].val == 0)) {
+            // applies the pending update to the node
+            if (pending[v].type == 1) {
+                t[v] += (r - l + 1) * pending[v].val;
+            } else {
+                t[v] = (r - l + 1) * pending[v].val;
+            }
+
+            // pushes the pending update to the children
+            if (l != r) {
+                combine(2*v, pending[v]);
+                combine(2*v+1, pending[v]);
+            }
+
+            // removes the pending update from the node
+            pending[v] = Update();
+        }
     }
 
     ll _query(int v, int l, int r, int ql, int qr) {
+        pushdown(v, l, r);
+
         if (r < ql || qr < l) {
             return 0;
         }
@@ -65,31 +105,35 @@ public:
         }
 
         int m = l + (r - l) / 2;
-        return _query(2 * v, l, m, ql, qr)
-            + _query(2 * v + 1, m + 1, r, ql, qr);
+        return _query(2 * v, l, m, ql, qr) + 
+               _query(2 * v + 1, m + 1, r, ql, qr);
     }
 
     ll query(int ql, int qr) {
         return _query(1, 0, n - 1, ql, qr);
     }
 
-    void _update(int v, int l, int r, int idx, int val) {
-        if (l == r) {
-            t[v] = val;
+    void _update(int v, int l, int r, int ql, int qr, Update u) {
+        pushdown(v, l, r);
+
+        if (r < ql || qr < l) {
+            return;
+        }
+        if (ql <= l && r <= qr) {
+            combine(v, u);
+            pushdown(v, l, r);
             return;
         }
 
         int m = l + (r - l) / 2;
-        if (idx <= m) {
-            _update(2 * v, l, m, idx, val);
-        } else {
-            _update(2 * v + 1, m + 1, r, idx, val);
-        }
-        t[v] = t[2 * v] + t[2 * v + 1];
+        _update(2*v, l, m, ql, qr, u);
+        _update(2*v+1, m+1, r, ql, qr, u);
+        t[v] = t[2*v] + t[2*v+1];
     }
 
-    void update(int idx, int val) {
-        _update(1, 0, n - 1, idx, val);
+    void update(int ql, int qr, int type, int val) {
+        Update u({type, val});
+        _update(1, 0, n - 1, ql, qr, u);
     }
 };
 
@@ -166,8 +210,24 @@ public:
 };
 
 void solve() {
-    int n;
-    cin >> n;
+    int n, q;
+    cin >> n >> q;
+    vector<int> a(n); cin >> a;
+    SegmentTree st(a);
+    // print_container(st.tsum, "tsum = ");
+    // print_container(st.tmin, "tmin = ");
+    while (q--) {
+        int t, a, b;
+        cin >> t >> a >> b;
+        --a; --b;
+        if (t == 3) {
+            cout << st.query(a, b) << "\n";
+        } else {
+            int x;
+            cin >> x;
+            st.update(a, b, t, x);
+        }
+    }
 }
 
 int main() {
