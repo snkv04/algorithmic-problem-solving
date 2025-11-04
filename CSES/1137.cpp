@@ -5,6 +5,10 @@ using ld = long double;
 
 int MOD = (int) 1e9 + 7; // 998244353;
 int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
+vector<vector<int>> adj;
+int counter;
+vector<int> pre, post;
+vector<bool> visited;
 
 template <typename T1, typename T2>
 std::ostream& operator<<(std::ostream &os, const std::pair<T1, T2> &p) {
@@ -165,9 +169,58 @@ public:
     }
 };
 
+void dfs(int node) {
+    pre[node] = counter++;
+    visited[node] = true;
+    for (int next : adj[node]) {
+        if (!visited[next]) {
+            dfs(next);
+        }
+    }
+    post[node] = counter++;
+}
+
 void solve() {
-    int n;
-    cin >> n;
+    int n, q;
+    cin >> n >> q;
+    vector<int> v(n); cin >> v;
+    adj.resize(n);
+    for (int i = 0; i < n-1; ++i) {
+        int u, v;
+        cin >> u >> v;
+        --u; --v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    counter = 0;
+    pre = vector<int>(n);
+    post = vector<int>(n);
+    visited = vector<bool>(n);
+    dfs(0);
+
+    vector<int> val(2*n);
+    for (int i = 0; i < n; ++i) {
+        val[pre[i]] = val[post[i]] = v[i];
+    }
+    SegmentTree st(val);
+
+    while (q--) {
+        int t;
+        cin >> t;
+        if (t == 1) {
+            int s, x;
+            cin >> s >> x;
+            --s;
+            st.update(pre[s], x);
+            st.update(post[s], x);
+        } else {
+            int s;
+            cin >> s;
+            --s;
+            cout << st.query(pre[s], post[s]) / 2 << "\n";
+        }
+    }
 }
 
 int main() {
