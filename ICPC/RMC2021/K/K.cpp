@@ -329,6 +329,13 @@ void solve() {
         anyway). it doesn't, though, so we have to do the min cut solution.
     - when using this dinics implementation, make sure to update the n from dinics with the proper value
     (which might take into consideration the doubling of nodes or adding a src and sink).
+    - the edges involved in a minimum cut are a subset of the edges that reached maximum capacity in
+    a max flow computation.
+    - when would we want to split vertices into 2 copies? in maxflow problems, where the core idea is
+    to limit the number of times something is used, we do this doubling to limit the number of times each
+    vertex is used instead of each edge. in mincut problems, where the core idea is that we make edges
+    finite so that they reach their capacity and get cut off and our goal is to find the minimum edge sum
+    that gets cut off, we do this doubling so that vertices reach their capacity instead of edges.
     */
 
     // old();
