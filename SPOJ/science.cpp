@@ -150,6 +150,13 @@ void solve() {
     rerun after the binary search is over. this is because the last iteration of binary search (and therefore
     an iteration of running max flow) might have been done with a nummatchings value that is too high and
     unachievable.
+    - "removing" an edge from a flow graph is straightforward: set its capacity to 0. for each edge that
+    we insert, the reverse edge has a capacity of 0, and this never changes. the forward edge has a capacity
+    of what we enter in. however, if we set the forward edge's capacity to 0, then neither edge will ever
+    be used. also, this might bring up the question of if we have to worry about flow values; after setting
+    the capacity to 0, can't the flow possibly be greater than the capacity before the next run? maybe, but
+    this implementation of dinic's sets all flows to 0 before running anyway.
+        - to tell if an edge is used, just check its flow.
     */
 
     int n;
