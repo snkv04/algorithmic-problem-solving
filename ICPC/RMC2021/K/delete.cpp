@@ -53,10 +53,10 @@ int main() {
 
   for (int i = 0; i < N; ++i) {
     if (change[i] != '?') {
-      if (team[i] == change[i]) add_edge(s, in(i), 2);
-      else add_edge(out(i), t, 2);
+      if (team[i] == change[i]) add_edge(s, in(i), INF); // flow can be inf
+      else add_edge(out(i), t, INF); // flow can be inf
     }
-    add_edge(in(i), out(i), 1);
+    add_edge(in(i), out(i), 3);
   }
 
   while (R--) {
@@ -66,17 +66,25 @@ int main() {
     // bool ustaysame = change[u] != '?' && team[u] == change[u];
     // bool vstaysame = change[v] != '?' && team[v] == change[v];
     // if ((ustaysame && vstaysame) || (!ustaysame && !vstaysame)) continue;
-    add_edge(out(u), in(v), 2);
-    add_edge(out(v), in(u), 2);
+    add_edge(out(u), in(v), INF);
+    add_edge(out(v), in(u), INF);
   }
 
   mincut(s, t);
 
   string final(N, '_');
   for (int i = 0; i < N; ++i)
-    if (par[out(i)] != -1) final[i] = team[i];
-    else if (par[in(i)] != -1) final[i] = 'X';
-    else final[i] = (team[i] == 'A' ? 'B' : 'A');
+    if (par[in(i)] != -1 && par[out(i)] == -1) { // this vertex was cut
+      final[i] = 'X';
+    } else {
+      if (par[in(i)] != -1) {
+        // this vertex is in S, meaning that it's visitable from s
+        final[i] = team[i];
+      } else {
+        // this vertex is in T, meaning that it's not visitable from t
+        final[i] = (team[i] == 'A' ? 'B' : 'A');
+      }
+    }
   cout << final << endl;
 
   return 0;
