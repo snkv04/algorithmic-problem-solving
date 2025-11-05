@@ -13,4 +13,5 @@ run_tests.sh
 # File types
 *.in
 *.out
+*.ans
 *.DS_Store
