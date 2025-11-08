@@ -159,8 +159,13 @@ public:
     void join(int a, int b) {
         int c = find(a), d = find(b);
         if (c != d) {
-            parent[d] = c;
-            size[c] += size[d];
+            if (size[c] >= size[d]) {
+                parent[d] = c;
+                size[c] += size[d];
+            } else {
+                parent[c] = d;
+                size[d] += size[c];
+            }
         }
     }
 };
