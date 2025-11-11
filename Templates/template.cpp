@@ -129,7 +129,7 @@ public:
 
     // l and r are both 0-based indices, where l is inclusive and r is exclusive
     pair<ll, ll> get_hash(int l, int r) {
-        vector<ll> result(2);
+        array<ll, 2> result;
         for (int t = 0; t < 2; ++t) {
             result[t] = (rolling[r][t] - (rolling[l][t] * PPOW[r - l][t] % MOD[t]) + MOD[t]) % MOD[t];
         }
