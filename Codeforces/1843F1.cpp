@@ -5,6 +5,11 @@ using ld = long double;
 
 int MOD = (int) 1e9 + 7; // 998244353;
 int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
+// vector<int> weight;
+int timer;
+// vector<vector<int>> adj;
+int n;
+vector<int> currmin, bestmin, currmax, bestmax;
 
 template <typename T1, typename T2>
 std::ostream& operator<<(std::ostream &os, const std::pair<T1, T2> &p) {
@@ -172,8 +177,40 @@ public:
 };
 
 void solve() {
-    int n;
     cin >> n;
+    timer = 1;
+    currmin = vector<int>(n+1, 1e9);
+    bestmin = vector<int>(n+1, 0);
+    currmax = vector<int>(n+1, -1e9);
+    bestmax = vector<int>(n+1, 0);
+    currmin[0] = currmax[0] = 1;
+    bestmax[0] = 1;
+    bestmin[0] = 0;
+    for (int i = 0; i < n; ++i) {
+        char op;
+        cin >> op;
+        if (op == '+') {
+            int node = timer++;
+            int p; cin >> p; --p;
+            int val; cin >> val;
+            currmin[node] = min(val, currmin[p] + val);
+            bestmin[node] = min(currmin[node], bestmin[p]);
+            currmax[node] = max(val, currmax[p] + val);
+            bestmax[node] = max(currmax[node], bestmax[p]);
+        } else {
+            int u, v, k;
+            cin >> u >> v >> k;
+            --u; --v;
+            // cout << "weight = " << weight << endl;
+            // cout << "currmin = " << currmin << endl;
+            // cout << "currmax = " << currmax << endl;
+            if (k >= bestmin[v] && k <= bestmax[v]) {
+                cout << "YES\n";
+            } else {
+                cout << "NO\n";
+            }
+        }
+    }
 }
 
 int main() {
@@ -182,7 +219,7 @@ int main() {
     cout.tie(nullptr);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
