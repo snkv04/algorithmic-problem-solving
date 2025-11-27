@@ -155,6 +155,9 @@ void solve() {
     across all indices for mem, and the maximum across right-side indices for mem2. the separation into arrays is just
     an implementation detail, and the usage of segment trees to perform range max queries (RMQ) is also an implementation
     detail.
+        - in fact, because we process the current value's indices from right to left, so we only need the right-side
+        indices for the current value, we just place the mem values for the current value in mem2, and then move them
+        to mem once the current value becomes >= that value + 2.
     */
 
     int n;
