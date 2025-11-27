@@ -74,7 +74,7 @@ public:
         return _query(1, 0, n - 1, ql, qr);
     }
 
-    void _update(int v, int l, int r, int idx, ll val) {
+    void _update(int v, int l, int r, int idx, int val) {
         if (l == r) {
             t[v] = val;
             return;
@@ -89,7 +89,7 @@ public:
         t[v] = t[2 * v] + t[2 * v + 1];
     }
 
-    void update(int idx, ll val) {
+    void update(int idx, int val) {
         _update(1, 0, n - 1, idx, val);
     }
 };
@@ -172,8 +172,39 @@ public:
 };
 
 void solve() {
+    /*
+    - we want to find the minimum cost of "changes" to make the entire array nondecreasing.
+    - assuming the rest of the array is nondecreasing and only one element is out of order,
+    its value can always be changed so that it fits into the rest of the array. in other words,
+    we don't have to worry about WHAT to change it to, since we can just imagine that a "change"
+    is a removal of the elements.
+    - so, we want to find the minimum cost of removals to make the entire array nondecreasing.
+    note that what this means is that the non-removed, or kept, elements must already be nondecreasing.
+    so, we just want to find the maximum cost of a non-decreasing subsequence, and by subtracting that
+    from the sum of all costs, we get the minimum cost of removals so that the remaining elements are
+    nondecreasing.
+    */
+
     int n;
     cin >> n;
+    vector<int> a(n), c(n);
+    cin >> a >> c;
+    vector<ll> mem(n, 0);
+    ll sum = 0, ans = 0;
+    for (int i = 0; i < n; ++i) {
+        ll best = 0;
+        for (int j = 0; j < i; ++j) {
+            if (a[j] <= a[i]) {
+                best = max(best, mem[j]);
+            }
+        }
+        mem[i] = best + c[i];
+
+        sum += c[i];
+        ans = max(ans, mem[i]);
+    }
+    ans = sum - ans;
+    cout << ans << '\n';
 }
 
 int main() {
@@ -182,7 +213,7 @@ int main() {
     cout.tie(nullptr);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }

@@ -34,40 +34,26 @@ struct SegmentTree {
 private:
     int n;
     vector<ll> t;
-    vector<int> a;
 
 public:
-    SegmentTree(const vector<int> &arr) {
-        n = arr.size();
-        a = arr;
+    SegmentTree(int n) : n(n) {
         t.resize(4 * n);
         fill(t.begin(), t.end(), 0);
-        build(1, 0, n - 1);
-    }
-
-    void build(int v, int l, int r) {
-        if (l == r) {
-            t[v] = a[l];
-            return;
-        }
-
-        int m = l + (r - l) / 2;
-        build(2 * v, l, m);
-        build(2 * v + 1, m + 1, r);
-        t[v] = t[2 * v] + t[2 * v + 1];
     }
 
     ll _query(int v, int l, int r, int ql, int qr) {
         if (r < ql || qr < l) {
-            return 0;
+            return -1e9;
         }
         if (ql <= l && r <= qr) {
             return t[v];
         }
 
         int m = l + (r - l) / 2;
-        return _query(2 * v, l, m, ql, qr)
-            + _query(2 * v + 1, m + 1, r, ql, qr);
+        return max(
+            _query(2 * v, l, m, ql, qr),
+            _query(2 * v + 1, m + 1, r, ql, qr)
+        );
     }
 
     ll query(int ql, int qr) {
@@ -86,7 +72,7 @@ public:
         } else {
             _update(2 * v + 1, m + 1, r, idx, val);
         }
-        t[v] = t[2 * v] + t[2 * v + 1];
+        t[v] = max(t[2 * v], t[2 * v + 1]);
     }
 
     void update(int idx, ll val) {
@@ -174,6 +160,34 @@ public:
 void solve() {
     int n;
     cin >> n;
+    vector<int> a(n), c(n);
+    cin >> a >> c;
+
+    // mem[i] = max cost across all non-decreasing subsequences that end at index i
+    // mem[i] := cost[i] + max(mem[j]) across all j < i such that a[j] <= a[i]
+    vector<pair<int, int>> sorted;
+    for (int i = 0; i < n; ++i) sorted.push_back(make_pair(a[i], i));
+    sort(sorted.begin(), sorted.end(), [](const pair<int, int> &a, const pair<int, int> &b) {
+        if (a.first != b.first) return a.first < b.first;
+        else return a.second < b.second;
+    }); // sorts the pairs lexicographically (first element, then second element)
+
+    SegmentTree mem(n);
+    ll sum = 0, ans = 0;
+    for (int i = 0; i < n; ++i) {
+        int idx = sorted[i].second;
+        ll best = 0;
+        if (idx > 0) {
+            best = mem.query(0, idx - 1);
+        }
+        best += c[idx];
+        mem.update(idx, best);
+
+        sum += c[idx];
+        ans = max(ans, best);
+    }
+    ans = sum - ans;
+    cout << ans << '\n';
 }
 
 int main() {
@@ -182,7 +196,7 @@ int main() {
     cout.tie(nullptr);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
