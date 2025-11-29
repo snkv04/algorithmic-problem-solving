@@ -260,8 +260,46 @@ struct Frac {
 };
 
 void solve() {
-    int n;
-    cin >> n;
+    /*
+    - the brute-force would be to check all even-length substrings, and for each, cut it in half then check
+    if the first half "equals" the second (where "equals" means that the question marks can be filled in such
+    that they equal each other). however, there are O(n^2) substrings, and checking each one takes O(n) time.
+    we can speed this up, though. if we can check each substring in O(1) time, then it can pass. how to do this?
+    preprocessing, as is common. we know that for a substring of length 2m, each character with index i in the
+    first half is being checked against character i+m in the second half. for each length m, we can check for
+    each index if character i matches character i+m, and form an array from this. then, we just build prefix
+    sums on this array, and again we want to do this for each length. finally, when iterating over all the
+    substrings (of length m, so then the candidate tandem repeat would be of length 2m), we can check if the
+    prefix sum over those m characters is equal to m, because if it is, then that means that all of those m
+    characters each match with the character that is m indices after it, so then those 2m characters form a
+    tandem repeat.
+    */
+
+    string s;
+    cin >> s;
+    int n = s.size();
+    if (n == 1) {
+        cout << "0\n";
+        return;
+    }
+
+    vector<vector<int>> pref(n, vector<int>(n, 0));
+    for (int dist = 1; dist < n; ++dist) {
+        for (int i = 0; i < n - dist; ++i) {
+            pref[dist][i] = (i == 0 ? 0 : pref[dist][i-1]) + (s[i]=='?' || s[i+dist]=='?' || s[i]==s[i+dist]);
+        }
+    }
+
+    int ans = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = i; j < n && 2 * j - i + 1 < n; ++j) {
+            int len = j - i + 1;
+            if (pref[len][j] - (i == 0 ? 0 : pref[len][i-1]) == len) {
+                ans = max(ans, 2 * len);
+            }
+        }
+    }
+    cout << ans << "\n";
 }
 
 int main() {
@@ -270,7 +308,7 @@ int main() {
     cout.tie(nullptr);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
