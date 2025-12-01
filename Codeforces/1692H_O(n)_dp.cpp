@@ -267,6 +267,7 @@ void solve() {
     don't want a segment where x[l] != x[r], because we can shrink the interval and get better results. then,
     we can just separate out the thing we are trying to maximize into a left and right expression, and for each
     value of right, pick the left bound that maximizes the left part of the quantity.
+    - the only reason it's O(nlogn) and not O(n) is because using a sorted map is faster than a hashmap here :^)
 
     generalizable ideas for the future:
     - if we are trying to maximize something and we need to keep track of the values of some other variables at
