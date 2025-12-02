@@ -5,9 +5,10 @@ using ld = long double;
 
 int MOD = (int) 1e9 + 7; // 998244353;
 int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
-vector<int> depth, pre, post;
 vector<vector<int>> tree;
-int timer;
+vector<int> r, t, depth, toidx, counts;
+vector<vector<array<int, 3>>> subordinates;
+vector<ll> ans;
 
 template <typename T1, typename T2>
 std::ostream& operator<<(std::ostream &os, const std::pair<T1, T2> &p) {
@@ -33,51 +34,71 @@ std::istream& operator>>(std::istream &is, std::vector<T> &v) {
     return is;
 }
 
+struct Node {
+    int v, l, r; // v is probably unnecessary, since the tree uses explicit nodes and not array indices
+    ll val;
+    Node *left, *right;
+
+    Node(int v, int l, int r) : v(v), l(l), r(r), val(0), left(nullptr), right(nullptr) {}
+
+    Node(int v, int l, int r, ll val) : v(v), l(l), r(r), val(val), left(nullptr), right(nullptr) {}
+};
+
 struct SegmentTree {
 private:
     int n;
-    vector<ll> t;
+    Node root;
 
 public:
-    SegmentTree(int n) : n(n) {
-        t.resize(4 * n);
-        fill(t.begin(), t.end(), 0);
+    SegmentTree(int n) : n(n), root(1, 0, n-1) {}
+    // SegmentTree(const SegmentTree &other) = delete;
+    // SegmentTree(SegmentTree &&moving) = delete;
+
+    void make_children(Node *node) {
+        if (node->left == nullptr) {
+            int v = node->v, l = node->l, r = node->r;
+            int m = l + (r - l) / 2;
+            node->left = new Node(v, l, m);
+            node->right = new Node(v, m+1, r);
+        }
     }
 
-    ll _query(int v, int l, int r, int ql, int qr) {
+    ll _query(Node *node, int ql, int qr) {
+        int l = node->l, r = node->r;
         if (r < ql || qr < l) {
             return 0;
         }
         if (ql <= l && r <= qr) {
-            return t[v];
+            return node->val;
         }
 
-        int m = l + (r - l) / 2;
-        return _query(2 * v, l, m, ql, qr)
-            + _query(2 * v + 1, m + 1, r, ql, qr);
+        make_children(node);
+        return _query(node->left, ql, qr) + _query(node->right, ql, qr);
     }
 
     ll query(int ql, int qr) {
-        return _query(1, 0, n - 1, ql, qr);
+        return _query(&root, ql, qr);
     }
 
-    void _update(int v, int l, int r, int idx, ll val) {
-        if (l == r) {
-            t[v] = val;
+    void _update(Node *root, int idx, ll val) {
+        if (root->l == root->r) {
+            root->val = val;
             return;
         }
 
+        make_children(root);
+        int l = root->l, r = root->r;
         int m = l + (r - l) / 2;
         if (idx <= m) {
-            _update(2 * v, l, m, idx, val);
+            _update(root->left, idx, val);
         } else {
-            _update(2 * v + 1, m + 1, r, idx, val);
+            _update(root->right, idx, val);
         }
-        t[v] = t[2 * v] + t[2 * v + 1];
+        root->val = root->left->val + root->right->val;
     }
 
     void update(int idx, ll val) {
-        _update(1, 0, n - 1, idx, val);
+        _update(&root, idx, val);
     }
 };
 
@@ -247,54 +268,83 @@ struct Frac {
 };
 
 void dfs(int node) {
-    pre[node] = timer++;
     for (int next : tree[node]) {
         depth[next] = depth[node] + 1;
         dfs(next);
     }
-    post[node] = timer++;
+}
+
+void dfs2(int node, vector<SegmentTree> &times) {
+    for (int child : tree[node]) {
+        dfs2(child, times);
+
+        if (counts[child] > counts[node]) {
+            swap(counts[node], counts[child]);
+            swap(subordinates[node], subordinates[child]);
+            swap(times[node], times[child]); // uses move if available, uses copy if move is unavailable
+        }
+        for (auto descendant : subordinates[child]) {
+            subordinates[node].push_back(descendant);
+            times[node].update(toidx[descendant[0]], descendant[2]);
+        }
+        counts[node] += counts[child];
+    }
+
+    counts[node] += 1;
+    subordinates[node].push_back(array<int, 3>{node, r[node], t[node]});
+    int idx = toidx[node];
+    times[node].update(idx, t[node]);
+    if (idx > 0) {
+        ans[node] = times[node].query(0, idx-1);
+    } else {
+        ans[node] = 0;
+    }
+    // cout << "processing " << node + 1 << ", st = ";
+    // for (int i = 0; i < toidx.size(); ++i) cout << times[node].query(i, i) << " ";
+    // cout << endl;
 }
 
 void solve() {
     int n;
     cin >> n;
-    vector<array<int, 3>> info;
     tree.resize(n);
+    r.resize(n);
+    t.resize(n);
     int root = -1;
     for (int i = 0; i < n; ++i) {
-        int m, r, t;
-        cin >> m >> r >> t;
-        --m;
-        info.push_back(array<int, 3>{i, r, t});
-        if (m >= 0) {
-            tree[m].push_back(i);
+        int mi;
+        cin >> mi >> r[i] >> t[i];
+        --mi;
+        if (mi >= 0) {
+            tree[mi].push_back(i);
         } else {
             root = i;
         }
     }
 
     depth.resize(n);
-    pre.resize(n);
-    post.resize(n);
     depth[root] = 0;
-    timer = 0;
     dfs(root);
 
+    // get each person's index in sorted order, which will be the same order the segment tree follows
+    vector<array<int, 3>> info;
+    for (int i = 0; i < n; ++i) info.push_back(array<int, 3>({i, r[i], depth[i]}));
     sort(info.begin(), info.end(), [&](const array<int, 3> &a, const array<int, 3> &b) {
         if (a[1] != b[1]) {
             return a[1] < b[1];
         } else {
-            return depth[a[0]] < depth[b[0]];
+            return a[2] < b[2];
         }
     });
+    toidx.resize(n);
+    for (int i = 0; i < n; ++i) toidx[info[i][0]] = i;
 
-    SegmentTree st(2*n);
-    vector<ll> ans(n);
-    for (int i = 0; i < n; ++i) {
-        int idx = info[i][0];
-        ans[idx] = st.query(pre[idx], post[idx]);
-        st.update(pre[idx], info[i][2]);
-    }
+    counts.resize(n);
+    subordinates.resize(n);
+    // uses the copy constructor, so define the root as a Node and not a Node*
+    vector<SegmentTree> times(n, SegmentTree(n)); // segment tree over an array of times for each subordinate, for each person
+    ans = vector<ll>(n);
+    dfs2(root, times);
     for (ll num : ans) {
         cout << num << "\n";
     }
