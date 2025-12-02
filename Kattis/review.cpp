@@ -5,7 +5,7 @@ using ld = long double;
 
 int MOD = (int) 1e9 + 7; // 998244353;
 int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
-vector<int> pre, post;
+vector<int> depth, pre, post;
 vector<vector<int>> tree;
 int timer;
 
@@ -249,49 +249,53 @@ struct Frac {
 void dfs(int node) {
     pre[node] = timer++;
     for (int next : tree[node]) {
+        depth[next] = depth[node] + 1;
         dfs(next);
     }
     post[node] = timer++;
 }
 
 void solve() {
-    ifstream cin("promote.in");
-    ofstream cout("promote.out");
-
     int n;
     cin >> n;
-    vector<int> p(n);
-    cin >> p;
+    vector<array<int, 3>> info;
     tree.resize(n);
-    for (int i = 1; i < n; ++i) {
-        int pi;
-        cin >> pi;
-        --pi;
-        tree[pi].push_back(i);
+    int root = -1;
+    for (int i = 0; i < n; ++i) {
+        int m, r, t;
+        cin >> m >> r >> t;
+        --m;
+        info.push_back(array<int, 3>{i, r, t});
+        if (m >= 0) {
+            tree[m].push_back(i);
+        } else {
+            root = i;
+        }
     }
 
+    depth.resize(n);
     pre.resize(n);
     post.resize(n);
+    depth[root] = 0;
     timer = 0;
-    dfs(0);
-    // cout << "pre = " << pre << ", post = " << post << endl;
+    dfs(root);
 
-    vector<pair<int, int>> sorted;
-    for (int i = 0; i < n; ++i) {
-        sorted.push_back(make_pair(i, p[i]));
-    }
-    sort(sorted.begin(), sorted.end(), [&](const pair<int, int> &a, const pair<int, int> &b) {
-        return a.second > b.second;
+    sort(info.begin(), info.end(), [&](const array<int, 3> &a, const array<int, 3> &b) {
+        if (a[1] != b[1]) {
+            return a[1] < b[1];
+        } else {
+            return depth[a[0]] < depth[b[0]];
+        }
     });
     SegmentTree st(2*n);
     
-    vector<int> ans(n);
+    vector<ll> ans(n);
     for (int i = 0; i < n; ++i) {
-        int idx = sorted[i].first;
+        int idx = info[i][0];
         ans[idx] = st.query(pre[idx], post[idx]);
-        st.update(pre[idx], 1);
+        st.update(pre[idx], info[i][2]);
     }
-    for (int num : ans) {
+    for (ll num : ans) {
         cout << num << "\n";
     }
 }
