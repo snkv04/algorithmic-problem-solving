@@ -4,8 +4,6 @@
 // so then count() is O(1)
 template <typename T>
 struct Multiset {
-    std::unordered_map<T, long long> counts;
-
     void add(T object) {
         counts[object] += 1;
     }
@@ -49,4 +47,7 @@ struct Multiset {
     bool empty() {
         return counts.empty();
     }
+
+private:
+    std::unordered_map<T, long long> counts;
 };
