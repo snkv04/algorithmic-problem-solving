@@ -10,7 +10,7 @@ struct RollingHash {
     std::pair<long long, long long> get_hash(int left, int right) {
         std::array<long long, 2> result;
         for (int t = 0; t < 2; ++t) {
-            result[t] = (rolling[right][t] - (rolling[left][t] * PRIME_POWERS[right - left][t] % MOD[t]) + MOD[t]) % MOD[t];
+            result[t] = (rolling[t][right] - (rolling[t][left] * PRIME_POWERS[t][right - left] % MOD[t]) + MOD[t]) % MOD[t];
         }
         return std::make_pair(result[0], result[1]);
     }
@@ -22,20 +22,20 @@ private:
     int n;
 
     void _build_hashes() {
-        rolling = std::vector<std::vector<long long>>(n + 1, std::vector<long long>(2, 0));
+        rolling = std::vector<std::vector<long long>>(2, std::vector<long long>(n + 1, 0));
         for (int t = 0; t < 2; ++t) {
             for (int i = 1; i <= n; ++i) {
                 int letter_as_int = str[i - 1];
-                rolling[i][t] = (rolling[i - 1][t] * PRIMES[t] + letter_as_int) % MOD[t];
+                rolling[t][i] = (rolling[t][i - 1] * PRIMES[t] + letter_as_int) % MOD[t];
             }
         }
     }
 
     void _build_powers() {
-        PRIME_POWERS = std::vector<std::vector<long long>>(n + 1, std::vector<long long>(2, 1));
+        PRIME_POWERS = std::vector<std::vector<long long>>(2, std::vector<long long>(n + 1, 1));
         for (int t = 0; t < 2; ++t) {
             for (int i = 1; i <= n; ++i) {
-                PRIME_POWERS[i][t] = (PRIME_POWERS[i - 1][t] * PRIMES[t]) % MOD[t];
+                PRIME_POWERS[t][i] = (PRIME_POWERS[t][i - 1] * PRIMES[t]) % MOD[t];
             }
         }
     }
