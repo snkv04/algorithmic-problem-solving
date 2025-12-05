@@ -87,7 +87,7 @@ struct Frac {
     }
 
     friend ostream& operator<<(ostream &os, const Frac &f) {
-        os << "(n=" << f.num << ", d=" << f.denom << ')';
+        os << f.num << " / " << f.denom;
         return os;
     }
 
