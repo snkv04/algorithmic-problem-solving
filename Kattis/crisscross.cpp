@@ -1,5 +1,3 @@
-// this code gets WA, but a DIRECT translation into Python passes
-
 #include <bits/stdc++.h>
 using namespace std;
 using ll = long long;
@@ -109,9 +107,24 @@ struct Point {
         }
     }
 
+    bool operator==(const Point &other) const {
+        return x == other.x && y == other.y;
+    }
+
     // effectively returns a vector, but there is a bijection between points and vectors
     Point operator-(const Point &other) {
         return Point{x - other.x, y - other.y};
+    }
+};
+
+struct Hash {
+    size_t operator()(const Point &p) const {
+        std::array<ll, 4> arr = {p.x.num, p.x.denom, p.y.num, p.y.denom};
+        ll hash = 0;
+        for (ll num : arr) {
+            hash ^= (hash << 6) + (hash >> 2) + 0x9e3779b9 + num;
+        }
+        return hash;
     }
 };
 
@@ -166,7 +179,7 @@ void solve() {
         lines.push_back(Line(x1, y1, x2, y2));
     }
 
-    set<Point> isects;
+    unordered_set<Point, Hash> isects;
     Frac zero(0, 1);
     for (int i = 0; i < n; ++i) {
         Line l1 = lines[i];
