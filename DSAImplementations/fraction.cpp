@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 using ll = long long;
+using ld = long double;
 
 ll gcd(ll a, ll b) {
     if (a < 0) a = -a;
@@ -89,6 +90,12 @@ struct Frac {
     friend ostream& operator<<(ostream &os, const Frac &f) {
         os << f.num << " / " << f.denom;
         return os;
+    }
+
+    ld to_ld() {
+        assert(denom != 0);
+        ld n = num, d = denom;
+        return n / d;
     }
 
 private:
