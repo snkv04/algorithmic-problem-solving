@@ -13,15 +13,15 @@ struct DSU {
         else return parent[node] = find(parent[node]);
     }
 
-    void join(int a, int b) {
-        int c = find(a), d = find(b);
-        if (c != d) {
-            if (comp_size[c] >= comp_size[d]) {
-                parent[d] = c;
-                comp_size[c] += comp_size[d];
+    void join(int node1, int node2) {
+        int root1 = find(node1), root2 = find(node2);
+        if (root1 != root2) {
+            if (comp_size[root1] >= comp_size[root2]) {
+                parent[root2] = root1;
+                comp_size[root1] += comp_size[root2];
             } else {
-                parent[c] = d;
-                comp_size[d] += comp_size[c];
+                parent[root1] = root2;
+                comp_size[root2] += comp_size[root1];
             }
         }
     }

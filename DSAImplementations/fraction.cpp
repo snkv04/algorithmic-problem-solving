@@ -1,43 +1,40 @@
 #include <bits/stdc++.h>
-using namespace std;
-using ll = long long;
-using ld = long double;
 
-ll gcd(ll a, ll b) {
+long long gcd(long long a, long long b) {
     if (a < 0) a = -a;
     if (b < 0) b = -b;
-    ll A = max(a, b), B = min(a, b);
-    while (B != 0) {
-        ll R = A % B;
-        A = B;
-        B = R;
+    long long max_op = std::max(a, b), min_op = std::min(a, b);
+    while (min_op != 0) {
+        long long rem = max_op % min_op;
+        max_op = min_op;
+        min_op = rem;
     }
-    return A;
+    return max_op;
 }
 
-ll lcm(ll a, ll b) {
+long long lcm(long long a, long long b) {
     if (a < 0) a = -a;
     if (b < 0) b = -b;
     return a / gcd(a, b) * b;
 }
 
 struct Frac {
-    Frac(ll n, ll d) : num(n), denom(d) {
+    Frac(long long n, long long d) : num(n), denom(d) {
         reduce();
     }
 
-    Frac(ll x) : num(x), denom(1) {}
+    Frac(long long x) : num(x), denom(1) {}
 
     bool operator<(const Frac &other) const {
-        ll d = lcm(denom, other.denom);
-        ll n1 = num * (d / denom), n2 = other.num * (d / other.denom);
-        return n1 < n2;
+        long long new_denom = lcm(denom, other.denom);
+        long long num1 = num * (new_denom / denom), num2 = other.num * (new_denom / other.denom);
+        return num1 < num2;
     }
 
     bool operator==(const Frac &other) const {
-        Frac f1 = *this, f2 = other;
-        f1.reduce(); f2.reduce();
-        return f1.num == f2.num && f1.denom == f2.denom;
+        Frac frac1 = *this, frac2 = other;
+        frac1.reduce(); frac2.reduce();
+        return frac1.num == frac2.num && frac1.denom == frac2.denom;
     }
 
     bool operator!=(const Frac &other) const {
@@ -49,7 +46,7 @@ struct Frac {
     }
 
     void reduce() {
-        ll g = gcd(num, denom);
+        long long g = gcd(num, denom);
         num /= g;
         denom /= g;
         if (denom < 0) {
@@ -59,9 +56,9 @@ struct Frac {
     }
 
     Frac operator+(const Frac &other) {
-        ll d = lcm(denom, other.denom);
-        ll n1 = num * (d / denom), n2 = other.num * (d / other.denom);
-        Frac result(n1 + n2, d);
+        long long new_denom = lcm(denom, other.denom);
+        long long num1 = num * (new_denom / denom), num2 = other.num * (new_denom / other.denom);
+        Frac result(num1 + num2, new_denom);
         result.reduce();
         return result;
     }
@@ -80,24 +77,23 @@ struct Frac {
         return operator*({other.denom, other.num});
     }
 
-    ll sign() {
+    long long sign() {
         reduce();
         if (num == 0) return 0;
         else if (num > 0) return 1;
         else return -1;
     }
 
-    friend ostream& operator<<(ostream &os, const Frac &f) {
-        os << f.num << " / " << f.denom;
+    friend std::ostream& operator<<(std::ostream &os, const Frac &fraction) {
+        os << fraction.num << "/" << fraction.denom;
         return os;
     }
 
-    ld to_ld() {
+    long double to_ld() {
         assert(denom != 0);
-        ld n = num, d = denom;
-        return n / d;
+        return static_cast<long double>(num) / static_cast<long double>(denom);
     }
 
 private:
-    ll num, denom;
+    long long num, denom;
 };

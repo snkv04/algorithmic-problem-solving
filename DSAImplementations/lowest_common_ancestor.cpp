@@ -40,19 +40,19 @@ struct LCA {
         return node;
     }
 
-    int lca(int a, int b) {
-        if (depth[a] > depth[b]) std::swap(a, b);
-        int diff = depth[b] - depth[a];
-        b = jump(b, diff);
-        if (a == b) return a;
+    int lca(int node1, int node2) {
+        if (depth[node1] > depth[node2]) std::swap(node1, node2);
+        int diff = depth[node2] - depth[node1];
+        node2 = jump(node2, diff);
+        if (node1 == node2) return node1;
 
         for (int i = MAX_POW; i >= 0; --i) {
-            if (ancestor[i][a] != ancestor[i][b]) {
-                a = ancestor[i][a];
-                b = ancestor[i][b];
+            if (ancestor[i][node1] != ancestor[i][node2]) {
+                node1 = ancestor[i][node1];
+                node2 = ancestor[i][node2];
             }
         }
-        return ancestor[0][a];
+        return ancestor[0][node1];
     }
 
 private:
