@@ -47,7 +47,7 @@ void solve() {
                 t2[i][j] = idx;
                 for (int k = 0; k < 4; ++k) {
                     int newi = i + di[k], newj = j + dj[k];
-                        if (in_bounds(newi, newj)) {
+                    if (in_bounds(newi, newj)) {
                         q.push(array<int, 4>({newi, newj, idx, dist + 1}));
                     }
                 }
