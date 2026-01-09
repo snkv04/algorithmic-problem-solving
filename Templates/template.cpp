@@ -12,8 +12,18 @@ std::ostream& operator<<(std::ostream &os, const std::pair<T1, T2> &p) {
     return os;
 }
 
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream &os, const std::array<T, N> &c) {
+    os << "[";
+    for (const auto &elem : c) {
+        os << elem << ",";
+    }
+    os << "]";
+    return os;
+}
+
 template <typename T>
-std::ostream& operator<<(std::ostream &os, const vector<T> &c) {
+std::ostream& operator<<(std::ostream &os, const std::vector<T> &c) {
     os << "[";
     for (const auto &elem : c) {
         os << elem << ",";
