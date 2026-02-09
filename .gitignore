@@ -15,3 +15,6 @@ run_tests.sh
 *.out
 *.ans
 *.DS_Store
+
+# `clangd` config files
+compile_flags.txt
