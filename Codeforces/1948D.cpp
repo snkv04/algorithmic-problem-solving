@@ -259,47 +259,135 @@ struct Frac {
     }
 };
 
-void solve() {
-    /*
-    - the brute-force would be to check all even-length substrings, and for each, cut it in half then check
-    if the first half "equals" the second (where "equals" means that the question marks can be filled in such
-    that they equal each other). however, there are O(n^2) substrings, and checking each one takes O(n) time.
-    we can speed this up, though. if we can check each substring in O(1) time, then it can pass. how to do this?
-    preprocessing, as is common. we know that for a substring of length 2m, each character with index i in the
-    first half is being checked against character i+m in the second half. for each length m, we can check for
-    each index if character i matches character i+m, and form an array from this. then, we just build prefix
-    sums on this array, and again we want to do this for each length. finally, when iterating over all the
-    substrings (of length m, so then the candidate tandem repeat would be of length 2m), we can check if the
-    prefix sum over those m characters is equal to m, because if it is, then that means that all of those m
-    characters each match with the character that is m indices after it, so then those 2m characters form a
-    tandem repeat.
-    */
+bool matching(char a, char b) {
+    return !(a != '?' && b != '?' && a != b);
+}
 
+void solve_prefix_sums_precomputed() {
     string s;
     cin >> s;
     int n = s.size();
-    if (n == 1) {
-        cout << "0\n";
-        return;
-    }
 
     vector<vector<int>> pref(n, vector<int>(n, 0));
-    for (int dist = 1; dist < n; ++dist) {
-        for (int i = 0; i < n - dist; ++i) {
-            pref[dist][i] = (i == 0 ? 0 : pref[dist][i-1]) + (s[i]=='?' || s[i+dist]=='?' || s[i]==s[i+dist]);
+    for (int len = 1; len <= n/2; ++len) {
+        for (int i = 0; i < n - len; ++i) {
+            pref[len][i] = (i == 0 ? 0 : pref[len][i-1]) + (matching(s[i], s[i+len]) ? 0 : 1);
         }
     }
 
+    // now, order of loops doesn't matter, since prefix sums were already computed correctly
     int ans = 0;
     for (int i = 0; i < n; ++i) {
-        for (int j = i; j < n && 2 * j - i + 1 < n; ++j) {
-            int len = j - i + 1;
-            if (pref[len][j] - (i == 0 ? 0 : pref[len][i-1]) == len) {
-                ans = max(ans, 2 * len);
+        for (int halflen = 1; halflen <= n/2 && i + 2 * halflen <= n; ++halflen) {
+            if (pref[halflen][i-1+halflen] - (i==0 ? 0 : pref[halflen][i-1]) == 0) {
+                ans = max(ans, 2 * halflen);
             }
         }
     }
-    cout << ans << "\n";
+    cout << ans << '\n';
+}
+
+void solve_prefix_sums_on_the_fly() {
+    string s;
+    cin >> s;
+    int n = s.size();
+
+    // only uses a 1D array to keep track of prefix sums, because we go through each length fully separately
+    int ans = 0;
+    for (int len = 1; len <= n/2; ++len) {
+        vector<int> pref(n, 0);
+        for (int i = 0; i < n-len; ++i) {
+            pref[i] = (i == 0 ? 0 : pref[i-1]) + (matching(s[i], s[i+len]) ? 0 : 1);
+        }
+
+        // make sure that when looking over candidates for the final substring, the full substring
+        // can fit within the string
+        for (int i = 0; i + 2 * len <= n; ++i) {
+            if (pref[i+len-1] - (i==0 ? 0 : pref[i-1]) == 0) {
+                ans = 2 * len;
+                break;
+            }
+        }
+    }
+    cout << ans << '\n';
+}
+
+void solve_sliding_window() {
+    string s;
+    cin >> s;
+    int n = s.size();
+
+    int ans = 0;
+    for (int len = 1; len <= n/2; ++len) {
+        int mismatches = 0;
+        for (int pos = 0; pos < len; ++pos) {
+            mismatches += matching(s[pos], s[pos+len]) ? 0 : 1;
+        }
+        if (!mismatches) {
+            ans = 2 * len;
+            continue;
+        }
+
+        // i will be the last character of the first half of the substring, but any loop with equivalent
+        // logic will be sufficient
+        for (int i = len; i + len < n; ++i) {
+            // usually, the definition of the for loop (in this case, the first 2 clauses) should eliminate
+            // ALL edge cases (such as out of bounds errors) that can happen from ANY indexing operations
+            mismatches += (matching(s[i], s[i+len]) ? 0 : 1);
+            mismatches -= (matching(s[i-len], s[i]) ? 0 : 1);
+            if (!mismatches) {
+                ans = 2 * len;
+                break;
+            }
+        }
+    }
+    cout << ans << '\n';
+}
+
+void solve() {
+    /*
+    - problem:
+        - given a string of lowercase Latin letters, where some positions don't have any letter specified
+        and simply have a question mark, find the length of the longest substring such that by replacing
+        the question marks however we want, our substring has an equal first and second half
+    - solution:
+        - replace the condition that the first half must equal the second half to an equivalent condition
+        that offers itself more easily to prefix sums/sliding windows: if the length of the substring is
+        L, then the condition is that each of the first L/2 characters must not mismatch with the character
+        that's L/2 chars to the right of it
+        - then, instead of iterating first through start position and second through end position/length,
+        iterate first through length and then efficiently check each start position using prefix sums
+    - details:
+        - some problems want you to find the substring/object itself, some only want you to find a property
+        of it (like the length); in this problem, we only need a property, but this also happens to be a
+        problem where we need to construct the full object
+        - explanation of the "equivalent" condition:
+            - if the length of our substring that we care about is fixed at L, then we can imagine a new
+            array p_{L/2}, where p_{L/2, i} is an indicator variable (which we can think of as an "error
+            indicator") equal to:
+                - 0, if any of the following are true:
+                    - s_i is a '?'
+                    - s_{i + L/2} is a '?'
+                    - s_i =/= '?', s_{i + L/2} =/= '?', and s_i == s_{i + L/2}
+                - 1, if the remaining case is true:
+                    - s_i =/= '?', s_{i + L/2} =/= '?', but s_i != s_{i + L/2}
+            - now, an equivalent condition is that for all j in [i, i + L/2 - 1], we must have that p_{L/2, j} == 0,
+            and checking that p's subarray sum is equal to 0 (good) or is nonzero (bad) is easily doable with a
+            prefix sum over p
+            - the reason why it "easily offers itself to prefix sums" is that by doing this conceptual transformation,
+            we form a new array (p), where there's an associated value for each index, and these values are reusable
+            for different subarrays/windows
+        - it doesn't matter in which order a matrix is indexed; just do whatever is most intuitive, for ease of coding,
+        then change later if needed
+        - in the end, this problem transforms into: for a fixed L/2, check if there's a subarray of length L/2 of some
+        new "error indicator" array (so all elements are 0 or 1) where the subarray sum is 0
+            - alternatively, we can treat it as a "success indicator", and check that the subarray sum is equal to the
+            length of the subarray
+    */
+
+    // solve_prefix_sums_precomputed();
+    // solve_prefix_sums_on_the_fly();
+    solve_sliding_window();
 }
 
 int main() {
