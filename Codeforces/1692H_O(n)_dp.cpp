@@ -261,19 +261,36 @@ struct Frac {
 
 void solve() {
     /*
-    - we can reformulate the thing we are trying to maximize (over all segments [l, r]) as the count of the
-    element we care about minus the count of the elements we don't care about in the segment. why? each of
-    those two types cancel each other out, so we just want the maximum difference. also, it's clear that we
-    don't want a segment where x[l] != x[r], because we can shrink the interval and get better results. then,
-    we can just separate out the thing we are trying to maximize into a left and right expression, and for each
-    value of right, pick the left bound that maximizes the left part of the quantity.
-    - the only reason it's O(nlogn) and not O(n) is because using a sorted map is faster than a hashmap here :^)
-
-    generalizable ideas for the future:
-    - if we are trying to maximize something and we need to keep track of the values of some other variables at
-    the time when that thing was maximized, then we can store them all together. that's obvious, but it's interesting
-    in this problem because we store the best left quantity and the left bound corresponding to that left quantity
-    as values in a map where we are keying on x[i].
+    - problem:
+        - given an array and a subarray defined by (x, l, r), the value of the subarray [a[l], ..., a[r]]
+        starts at 1, doubles for every instance of x, and halves for every instance of anything that's not x
+        - pick (x, l, r) to maximize the value of the subarray [a[l], ..., a[r]]
+    - solution:
+        - we want to basically pick a subarray and an element x such that the value of (frequency of x within
+        the subarray minus frequency of anything non-x within the subarray) is maximized
+        - to do this, simply iterate over r, and for each r, look over all l and pick the l that maximizes
+        the target quantity; that's the main idea, but there are two simplifications:
+            - note that we want to choose l and r such that a[l] == a[r] == x, because if that's not the case,
+            we can tighten the subarray and increase our value; as a result, for a given r, the value of x
+            is fixed
+            - since the quantity we care about can be split up into an "r" portion and an "l" portion, we can
+            search over all "l" (for a fixed "x") in O(1) by keeping track of the best value for the "l" portion
+    - details:
+        - the task of "maximize the product, where we double on preferable element, and halve on non-preferred element"
+        can be converted into "maximize count of preferred elements minus count of non-preferred elements",
+        and the whole process of counting can simply be converted into "add +1 on preferred element, and
+        add -1 on non-preferred element; now, maximize the sum"
+            - this simple conversion of "counting" into "using +1 and -1" is analogous to the standard idea of
+            indicator variables
+        - we can get an O(n) complexity in a couple of ways: either we iterate through values in the array,
+        and for each value x, we only process the indices i such that a[i]=x (so then the sum of indices that
+        we process is equal to n), or we iterate through all indices in order at once so we aren't just
+        looking at indices with the same value in an inner loop
+            - the latter solution is this one
+            - the former solution is what the kadane's solution and segment tree solution do
+        - in general, there are 2 ways of processing a sequence of elements while keeping track of some record-keeping
+        variables: process the element before updating the record-keeping variable, and update the record-keeping variable
+        before processing the element
     */
 
     int n;
@@ -282,38 +299,94 @@ void solve() {
     cin >> x;
     
     /*
-    - we want to maximize   count[l] - (length - count[l]) =
-                            2 * count[l] - length =
+    - we want to maximize   count(l, r) - (length - count(l, r)) =
+                            2 * count(l, r) - length =
                             l - r - 1 + 2 * (pref[r] - pref[l-1]) =
                             l - r - 1 + 2 * (pref[r] - (pref[l] - 1)) =
-                            (l - 2 * pref[l] + 1) + (2 * pref[r] - r)
-    */
-    map<int, pair<int, int>> bestl;
-    map<int, int> pref;
-    int maxtotal = 1, ansdie = x[0], ansl = 0, ansr = 0;
+                            (l - 2 * pref[l] + 1) + (2 * pref[r] - r)    */
+    map<int, int> pref;  // maps a value x to its prefix count for efficient subarray frequency counting
+    map<int, pair<int, int>> best;  // maps a value x to its optimal (l, l - 2*pref[l] + 1)
+    int ans = -1, ansx = -1, ansl = -1, ansr = -1;
     for (int i = 0; i < n; ++i) {
         int xi = x[i];
-        if (bestl.find(xi) == bestl.end()) {
-            pref[xi] = 1;
-            bestl[xi] = make_pair(i, i - 1);
-        } else {
-            pref[xi] += 1;
-            int best = (2 * pref[xi] - i) + bestl[xi].second;
-            // cout << "i = " << i << ", best = " << best << ", maxtotal = " << maxtotal << endl;
-            if (best > maxtotal) {
-                maxtotal = best;
-                ansdie = xi;
-                ansl = bestl[xi].first;
-                ansr = i;
+
+        // two ways of implementation:
+        // 
+        // (1) assume `pref` and `best` only refer to indices strictly < i, and break into two cases:
+        // i holds the first instance of x[i], and i doesn't hold the first instance of x[i]
+        // (2) assume `pref` and `best` refer to indices <= i, and just enforce this before processing
+        // index i, so then no breaking into cases is needed when processing index i
+        // 
+        // the second way is more intuitive, because it is more general in the sense that it deals with
+        // all indices <= i in the same way; either one works, though, so don't overcomplicate it, and
+        // in the future just go with something that works (i.e., break into cases if clearer to understand)
+        // instead of trying to make it clean before even getting something working
+
+        auto assume_strictly_left = [&]() {
+            // break into two cases: first instance of x (so there's nothing strictly left),
+            // and not first instance of x (so there is somethign strictly left)
+            if (pref.find(xi) == pref.end()) {
+                pref[xi] = 1;
+                best[xi] = make_pair(i, i - 1);  // make_pair(i, i - 2 * pref[x] + 1);
+
+                // check if this (l, r) is good enough to be the new answer
+                if (1 > ans) {
+                    ans = 1;
+                    ansx = xi;
+                    ansl = ansr = i;
+                }
+            } else {
+                // find the best "l portion" across all l
+                int right = 2 * (pref[xi] + 1) - i;
+                int val = best[xi].second + right;
+
+                // check if this (l, r) is good enough to be the new answer
+                if (val > ans) {
+                    ans = val;
+                    ansx = xi;
+                    ansl = best[xi].first;
+                    ansr = i;
+                }
+
+                // update pref[x] and best[x]
+                pref[xi] += 1;
+                int left = i - 2 * pref[xi] + 1;
+                if (left > best[xi].second) {
+                    best[xi] = make_pair(i, left);
+                }
+            }
+        };
+
+        auto assume_at_or_left = [&]() {
+            // update pref and best
+            if (pref.find(xi) == pref.end()) {
+                pref[xi] = 1;
+                best[xi] = make_pair(i, i - 1);
+            } else {
+                pref[xi] += 1;
+                int left = i - 2 * pref[xi] + 1;
+                if (left > best[xi].second) {
+                    best[xi] = make_pair(i, left);
+                }
             }
 
-            int leftpart = i - 2 * pref[x[i]] + 1; // the left-side quantity we want to save the best of, for each x[i]
-            if (leftpart > bestl[xi].second) {
-                bestl[xi] = make_pair(i, leftpart);
+            // find the best "l portion" across all l
+            int right = 2 * pref[xi] - i;
+            int val = best[xi].second + right;
+
+            // check if this (l, r) is good enough to be the new answer
+            if (val > ans) {
+                ans = val;
+                ansx = xi;
+                ansl = best[xi].first;
+                ansr = i;
             }
-        }
+        };
+
+        // assume_strictly_left();
+        assume_at_or_left();
     }
-    cout << ansdie << ' ' << ansl + 1 << ' ' << ansr + 1 << '\n';
+    cout << ansx << ' ' << (ansl + 1) << ' ' << (ansr + 1) << '\n';
 }
 
 int main() {

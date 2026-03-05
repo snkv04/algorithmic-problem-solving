@@ -12,152 +12,161 @@ std::istream& operator>>(std::istream &is, std::vector<T> &v) {
 }
 
 struct Segment {
-    ll bestpref, bestsuf, sum, bestsum, bestprefR, bestsufL, bestsumL, bestsumR;
+    int bestpref, bestprefR;
+    int bestsuf, bestsufL;
+    int bestsum, bestsumL, bestsumR;
+    int sum;
 
-    Segment() {
-        Segment(0, -1e9);
-    }
-
-    Segment(ll val, int idx) {
-        bestpref = max(0LL, val);
-        bestsuf = max(0LL, val);
-        sum = val;
-        bestsum = max(0LL, val);
-        if (val >= 0) {
-            bestprefR = bestsufL = bestsumL = bestsumR = idx;
+    Segment(int idx, int sum) : sum(sum) {
+        if (sum >= 0) {
+            bestsum = bestpref = bestsuf = sum;
+            bestsumL = bestsumR = bestprefR = bestsufL = idx;
         } else {
-            bestsufL = bestsumL = idx+1;
-            bestprefR = bestsumR = idx-1;
+            bestsum = bestpref = bestsuf = 0;
+            bestsumL = bestsufL = idx + 1;  // suffix starts after the segment
+            bestsumR = bestprefR = idx - 1;  // prefix ends before the segment
         }
     }
 
-    Segment(ll p, ll s, ll sum, ll bs, ll prefR, ll sufL, ll sumL, ll sumR) :
-        bestpref(p),
-        bestsuf(s),
-        sum(sum),
-        bestsum(bs),
-        bestprefR(prefR),
-        bestsufL(sufL),
-        bestsumL(sumL),
-        bestsumR(sumR) {}
+    Segment() : Segment(-1, 0) {}
 
-    Segment merge(const Segment &other) {
-        ll out_best_pref = bestpref;
-        ll out_best_suf = other.bestsuf;
-        ll out_sum = sum + other.sum;
-        ll out_best_sum = bestsuf + other.bestpref;
-        ll out_best_pref_R = bestprefR;
-        ll out_best_suf_L = other.bestsufL;
-        ll out_best_sum_L = bestsufL;
-        ll out_best_sum_R = other.bestprefR;
+    Segment(int bp, int bpr, int bs, int bsl, int bsm, int bsml, int bsmr, int s) :
+        bestpref(bp), bestprefR(bpr),
+        bestsuf(bs), bestsufL(bsl),
+        bestsum(bsm), bestsumL(bsml), bestsumR(bsmr),
+        sum(s) {}
 
-        if (sum + other.bestpref > out_best_pref) {
-            out_best_pref = sum + other.bestpref;
-            out_best_pref_R = other.bestprefR;
+    friend Segment merge(Segment left, Segment right) {
+        int ressum = left.sum + right.sum;
+
+        int resbestpref = left.bestpref;
+        int resbestprefR = left.bestprefR;
+        if (left.sum + right.bestpref > resbestpref) {
+            resbestpref = left.sum + right.bestpref;
+            resbestprefR = right.bestprefR;
         }
 
-        if (other.sum + bestsuf > out_best_suf) {
-            out_best_suf = other.sum + bestsuf;
-            out_best_suf_L = bestsufL;
+        int resbestsuf = right.bestsuf;
+        int resbestsufL = right.bestsufL;
+        if (right.sum + left.bestsuf > resbestsuf) {
+            resbestsuf = right.sum + left.bestsuf;
+            resbestsufL = left.bestsufL;
         }
 
-        if (bestsum > out_best_sum) {
-            out_best_sum = bestsum;
-            out_best_sum_L = bestsumL;
-            out_best_sum_R = bestsumR;
+        int resbestsum = left.bestsuf + right.bestpref;
+        int resbestsumL = left.bestsufL;
+        int resbestsumR = right.bestprefR;
+        if (left.bestsum > resbestsum) {
+            resbestsum = left.bestsum;
+            resbestsumL = left.bestsumL;
+            resbestsumR = left.bestsumR;
         }
-        if (other.bestsum > out_best_sum) {
-            out_best_sum = other.bestsum;
-            out_best_sum_L = other.bestsumL;
-            out_best_sum_R = other.bestsumR;
+        if (right.bestsum > resbestsum) {
+            resbestsum = right.bestsum;
+            resbestsumL = right.bestsumL;
+            resbestsumR = right.bestsumR;
         }
 
-        return Segment(
-            out_best_pref,
-            out_best_suf,
-            out_sum,
-            out_best_sum,
-            out_best_pref_R,
-            out_best_suf_L,
-            out_best_sum_L,
-            out_best_sum_R
-        );
+        Segment result{
+            resbestpref,
+            resbestprefR,
+            resbestsuf,
+            resbestsufL,
+            resbestsum,
+            resbestsumL,
+            resbestsumR,
+            ressum
+        };
+        return result;
     }
 };
 
 struct SegmentTree {
-private:
-    int n;
-    vector<Segment> segments;
-    vector<int> a;
-
-public:
-    SegmentTree(const vector<int> &arr) {
-        n = arr.size();
-        a = arr;
-        segments.resize(4 * n);
-        build(1, 0, n - 1);
-    }
-
     void build(int v, int l, int r) {
         if (l == r) {
-            segments[v] = Segment(a[l], l);
+            t[v] = Segment(l, a[l]);
             return;
         }
 
-        int m = l + (r - l) / 2;
-        build(2 * v, l, m);
-        build(2 * v + 1, m + 1, r);
-        segments[v] = segments[2*v].merge(segments[2*v+1]);
+        int m = (l + r) / 2;
+        build(2*v, l, m);
+        build(2*v+1, m+1, r);
+        t[v] = merge(t[2*v], t[2*v+1]);
+    }
+
+    SegmentTree(int n, int x) : n(n), a(n, x) {
+        t.resize(4*n);
+        build(1, 0, n-1);
+    }
+
+    void _update(int v, int l, int r, int idx, int val) {
+        if (l == r) {
+            t[v] = Segment(l, val);
+            return;
+        }
+
+        int m = (l + r) / 2;
+        if (idx <= m) {
+            _update(2*v, l, m, idx, val);
+        } else {
+            _update(2*v+1, m+1, r, idx, val);
+        }
+        t[v] = merge(t[2*v], t[2*v+1]);
+    }
+
+    void update(int idx, int val) {
+        _update(1, 0, n-1, idx, val);
     }
 
     Segment _query(int v, int l, int r, int ql, int qr) {
-        if (r < ql || qr < l) {
-            return Segment(0, -1);
+        if (qr < l || r < ql) {
+            return Segment();
         }
         if (ql <= l && r <= qr) {
-            return segments[v];
+            return t[v];
         }
 
-        int m = l + (r - l) / 2;
-        return _query(2 * v, l, m, ql, qr).merge(_query(2 * v + 1, m + 1, r, ql, qr));
+        int m = (l + r) / 2;
+        return merge(
+            _query(2*v, l, m, ql, qr),
+            _query(2*v+1, m+1, r, ql, qr)
+        );
     }
 
     Segment query(int ql, int qr) {
-        return _query(1, 0, n - 1, ql, qr);
+        return _query(1, 0, n-1, ql, qr);
     }
 
-    void _update(int v, int l, int r, int idx, ll val) {
-        if (l == r) {
-            segments[v] = Segment(val, l);
-            return;
-        }
-
-        int m = l + (r - l) / 2;
-        if (idx <= m) {
-            _update(2 * v, l, m, idx, val);
-        } else {
-            _update(2 * v + 1, m + 1, r, idx, val);
-        }
-        segments[v] = segments[2*v].merge(segments[2*v+1]);
-    }
-
-    void update(int idx, ll val) {
-        _update(1, 0, n - 1, idx, val);
-    }
+private:
+    int n;
+    vector<int> a;
+    vector<Segment> t;
 };
 
 void solve() {
     /*
-    how tf did this implementation actually work on the first try?
-
-    generalizable ideas for the future:
-    - the brute-force solution would have been to update the full array to represent the +1/-1 array for each
-    possible value of the selected die, and then find the subarray with the maximum sum. however, that's O(n^2).
-    a quicker solution is to initialize the entire array to -1, then go through each possible value, and only change
-    the value of those elements to 1 in our new array, and find the maximum subarray sum. normally, that would still
-    be O(n^2) if we do Kadane's algorithm across the whole array, but we can implement a segment tree that finds the
-    maximum subarray sum, so then we can perform a single O(log(n)) query for each value of the die.
+    - problem:
+        - given an array, pick a subarray and an element such that the difference between (frequency of that
+        element in subarray) and (frequency of anything else in subarray) is maximized
+    - solution:
+        - the basic idea is: we can iterate through each value in the array, transform the array so that all
+        instances of it are 1 and all others are -1, and find the maximum subarray sum
+        - to do this efficiently, we actually initialize the entire array to -1s and maintain a segment tree
+        to find the best subarray (based on subarray sum), then for each value, we activate its indices to 1,
+        query the segtree a single time, and deactivate its indices back to -1
+    - details:
+        - how tf did this implementation actually work on the first try?
+            - update: this was true of my original implementation; my re-implementation was a little bit broken
+            with both compiler and logical errors
+        - regarding constructors of classes/structs:
+            - if we define class A where one of the attributes contains (or simply IS) another class B that we define,
+            then check to see if there are any implicit calls to class B's default constructor (such as in the creation
+            of a non-empty vector containing class B), and if so, then make sure to define class B's constructor
+            - in general, when implementing some code, start with the logic, then come up with any record-keeping
+            variables, functions, or constructors that are needed to codify that logic
+            - to call another constructor from one constructor, you basically just use initializer list syntax
+        - when implementing a segment tree with explicit segments as objects, just make the query() function return
+        an explicit segment and not a value; the relevant value can be extracted from the segment object
     */
 
     int n;
@@ -167,8 +176,7 @@ void solve() {
     map<int, set<int>> indices;
     for (int i = 0; i < n; ++i) indices[x[i]].insert(i);
 
-    vector<int> a(n, -1);
-    SegmentTree st(a);
+    SegmentTree st(n, -1);
     int bestsum = 0, ansdie = -1, ansl = -1, ansr = -1;
     for (auto entry : indices) {
         for (int idx : entry.second) {

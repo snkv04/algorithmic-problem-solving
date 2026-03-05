@@ -5,7 +5,6 @@ struct LCA {
     LCA(const std::vector<std::vector<int>> &adj, int root) :
             n(adj.size()),
             MAX_POW(1 + std::ceil(std::log2(n))),
-            root(root),
             adj(adj),
             depth(n, 0), 
             ancestor(MAX_POW + 1, std::vector<int>(n, -1)) {
@@ -56,7 +55,7 @@ struct LCA {
     }
 
 private:
-    int n, root;
+    int n;
     const int MAX_POW;
     const std::vector<std::vector<int>> &adj;
     std::vector<int> depth;
