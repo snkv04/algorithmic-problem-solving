@@ -163,31 +163,26 @@ void solve() {
     vector<int> a(n), c(n);
     cin >> a >> c;
 
+    // state: how we define each element of our DP array
     // mem[i] = max cost across all non-decreasing subsequences that end at index i
+    // transition: how we actually calculate each element of our DP array
     // mem[i] := cost[i] + max(mem[j]) across all j < i such that a[j] <= a[i]
     vector<pair<int, int>> sorted;
-    for (int i = 0; i < n; ++i) sorted.push_back(make_pair(a[i], i));
-    sort(sorted.begin(), sorted.end(), [](const pair<int, int> &a, const pair<int, int> &b) {
-        if (a.first != b.first) return a.first < b.first;
-        else return a.second < b.second;
-    }); // sorts the pairs lexicographically (first element, then second element)
+    for (int i = 0; i < n; ++i) {
+        sorted.push_back({a[i], i});
+    }
+    sort(sorted.begin(), sorted.end());
 
     SegmentTree mem(n);
-    ll sum = 0, ans = 0;
-    for (int i = 0; i < n; ++i) {
-        int idx = sorted[i].second;
-        ll best = 0;
-        if (idx > 0) {
-            best = mem.query(0, idx - 1);
-        }
-        best += c[idx];
-        mem.update(idx, best);
-
-        sum += c[idx];
-        ans = max(ans, best);
+    ll total = 0, best = 0;
+    for (auto [ai, i] : sorted) {
+        ll maxprev = mem.query(0, i);
+        ll maxcurr = maxprev + c[i];
+        mem.update(i, maxcurr);
+        best = max(best, maxcurr);
+        total += c[i];
     }
-    ans = sum - ans;
-    cout << ans << '\n';
+    cout << total - best << '\n';
 }
 
 int main() {

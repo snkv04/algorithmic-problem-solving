@@ -12,13 +12,23 @@ std::ostream& operator<<(std::ostream &os, const std::pair<T1, T2> &p) {
     return os;
 }
 
-template <typename Container>
-void print_container(const Container &c, string prefix = "", std::ostream &os = std::cout) {
-    os << prefix << "[";
-    for (const auto &elem : c) {
-        os << elem << ",";
+template <typename T>
+std::ostream& operator<<(std::ostream &os, std::vector<T> &v) {
+    os << "[";
+    for (int i = 0; i < v.size(); ++i) {
+        os << v[i];
+        if (i < v.size() - 1) os << ", ";
     }
-    os << "]" << endl;
+    os << "]";
+    return os;
+}
+
+template <typename T>
+std::istream& operator>>(std::istream &is, std::vector<T> &v) {
+    for (int i = 0; i < v.size(); ++i) {
+        is >> v[i];
+    }
+    return is;
 }
 
 struct SegmentTree {
@@ -163,62 +173,52 @@ void solve() {
     int n;
     cin >> n;
     vector<int> a(n);
-    for (int i = 0; i < n; ++i) {
-        cin >> a[i];
-    }
+    cin >> a;
 
-    vector<pair<int, int>> sorted;
-    unordered_map<int, unordered_set<int>> indices;
-    for (int i = 0; i < n; ++i) {
-        sorted.push_back(make_pair(a[i], i));
-        indices[a[i]].insert(i);
-    }
-    sort(sorted.begin(), sorted.end(), [](const pair<int, int> &a, const pair<int, int> &b) {
-        if (a.first != b.first) {
-            return a.first < b.first;
+    map<int, set<int>> indices;
+    for (int i = 0; i < n; ++i) indices[a[i]].insert(i);
+
+    int maxltprev = 0;
+    SegmentTree prevmem(n);
+    for (auto &[val, index_set] : indices) {
+        // computes mem[i] for each index i in index_set
+        int maxcurr = 0;
+        map<int, int> currmem;
+        for (auto it = index_set.rbegin(); it != index_set.rend(); ++it) {
+            int i = *it;
+            int memi = 1 + max({
+                maxltprev,
+                maxcurr,  // fine, because we're going from right to left
+                (int) prevmem.query(i, n-1)
+            });
+            currmem[i] = memi;
+            maxcurr = max(maxcurr, memi);
+        }
+
+        // updates maxltprev (below window) and prevmem (within window) for next value
+        // (1) move prevmem into maxltprev, and also update prevmem
+        int a_i = val;
+        int last_a_i = a_i - 1;
+        if (indices.find(last_a_i) != indices.end()) {
+            for (auto i : indices[last_a_i]) {
+                maxltprev = max(maxltprev, (int) prevmem.query(i, i));
+                prevmem.update(i, 0);
+            }
+        }
+        // (2) move currmem to either maxltprev or prevmem
+        int next_a_i = indices.upper_bound(a_i) == indices.end() ? 1e9 : indices.upper_bound(a_i)->first;
+        bool jumping = next_a_i > (a_i + 1);
+        if (jumping) {
+            for (auto [i, memi] : currmem) {
+                maxltprev = max(maxltprev, memi);
+            }
         } else {
-            return a.second > b.second;
-        }
-    });
-    // print_container(sorted, "sorted = ");
-
-    SegmentTree mem(n), mem2(n);
-    ll ans = 0;
-    auto move_value = [&](int index) {
-        mem.update(index, mem2.query(index, index));
-        mem2.update(index, 0); // unnecessary, but is logically cleaner
-    };
-    for (int i = 0; i < n; ++i) {
-        int val = sorted[i].first, idx = sorted[i].second;
-        // cout << "processing idx " << idx << " val " << val << endl;
-
-        ll best = 0;
-        best = max(best, mem.query(0, n-1));
-        if (idx < n-1) best = max(best, mem2.query(idx+1, n-1));
-        best += 1;
-
-        mem2.update(idx, best);
-        ans = max(ans, best);
-
-        if (i == n-1) continue;
-        if (sorted[i+1].first != val) {
-            if (indices.find(val-1) != indices.end()) {
-                for (int index : indices[val-1]) {
-                    move_value(index);
-                }
-            }
-            if (sorted[i+1].first != val + 1) {
-                for (int index : indices[val]) {
-                    move_value(index);
-                }
+            for (auto [i, memi] : currmem) {
+                prevmem.update(i, memi);
             }
         }
-        // cout << "after, mem = \n"; for (int i = 0; i < n; ++i) cout << mem.query(i, i) << " ";
-        // cout << "\nmem2 = \n"; for (int i = 0; i < n; ++i) cout << mem2.query(i, i) << " "; cout << endl << endl;
     }
-    ans = n - ans;
-    cout << ans << "\n";
-    // cout << "====\n";
+    cout << n - maxltprev << '\n';
 }
 
 int main() {

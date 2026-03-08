@@ -189,22 +189,21 @@ void solve() {
     cin >> n;
     vector<int> a(n), c(n);
     cin >> a >> c;
-    vector<ll> mem(n, 0);
-    ll sum = 0, ans = 0;
+    ll total = 0, mem[n], best = 0;
+    // mem[i] = max sum of costs from picking elements with indices <= i, where i is picked and all
+    // picked elements are nondecreasing
+    fill(mem, mem+n, 0);
     for (int i = 0; i < n; ++i) {
-        ll best = 0;
+        mem[i] = c[i];  // default value is important, in order to make the mem array align with its definition
         for (int j = 0; j < i; ++j) {
             if (a[j] <= a[i]) {
-                best = max(best, mem[j]);
+                mem[i] = max(mem[i], c[i] + mem[j]);
             }
         }
-        mem[i] = best + c[i];
-
-        sum += c[i];
-        ans = max(ans, mem[i]);
+        best = max(best, mem[i]);
+        total += c[i];
     }
-    ans = sum - ans;
-    cout << ans << '\n';
+    cout << total - best << '\n';
 }
 
 int main() {
