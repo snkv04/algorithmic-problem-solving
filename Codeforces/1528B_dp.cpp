@@ -80,7 +80,7 @@ void solve() {
     - solution:
         - like in the other solution, we can break up the points in [n+1, 2n] into "layers",
         which symmetrically breaks up [1, n], such that each layer only includes points of a certain pair length
-        - then, we define our DP state dp[i] to be the number of ways to pair exactly 2i points, and then
+        - then, we define our DP state dp[i] to be the number of ways to pair exactly 2i consecutive points, and then
         we compute dp[i] by looking over all possible sizes of the size of the layer containing points 1 and i
         (and possibly more points), including the case where that's the only layer
     - details:
