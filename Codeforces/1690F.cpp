@@ -67,7 +67,10 @@ void solve() {
         - when i say "step", i'm talking about a single cyclic shift (such as to the right)
     - however, each cycle can have different numbers of steps after which it returns to its original sequence;
     key idea is that if it returns to its original sequence after k_1 and after k_2 steps, then it also returns to
-    its original sequence after gcd(k_1, k_2) steps
+    its original sequence after gcd(k_1, k_2) steps, so then we only need to find the smallest such shift such
+    that all the letters in the cycle return to their original spots (where just the letters need to be equal;
+    if the indices also needed to return to their original spots, then the minimum shift would trivially just
+    be the length of the cycle)
     */
 
     int n;
@@ -80,6 +83,7 @@ void solve() {
     ll ans = 1;
     for (int i = 0; i < n; ++i) {
         if (!visited[i]) {
+            // gets the cycle that this index is involved in
             int curr = i;
             vector<char> cycle;
             while (!visited[curr]) {
@@ -88,11 +92,13 @@ void solve() {
                 curr = p[curr];
             }
 
+            // gets possible shifts from the list of divisors of the cycle's size
             vector<int> divisors;
             for (int j = 1; j <= cycle.size(); ++j) {
                 if (cycle.size() % j == 0) divisors.push_back(j);  // causes overall O(t * n * sqrt(n))
             }
 
+            // finds the smallest shift that works
             int required = -1;
             for (int d : divisors) {
                 bool works = true;
