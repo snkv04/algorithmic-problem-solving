@@ -98,12 +98,14 @@ void solve() {
             queue<int> q;
             q.push(i);
             while (q.size()) {
+                // visit the node
                 int node = q.front();
                 q.pop();
                 if (visited[node]) continue;
                 visited[node] = true;
                 comp_size += 1;
 
+                // check adjacent nodes
                 for (auto [next, weight] : adj[node]) {
                     int next_color = color[node] ^ ((int) weight);
                     if (color[next] == -1) {
