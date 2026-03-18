@@ -104,27 +104,22 @@ void solve() {
     int n;
     cin >> n;
     vector<int> t(n);
-    for (int i = 0; i < n; ++i) cin >> t[i];
+    for (int i = 0; i < n; ++i) {
+        cin >> t[i];
+    }
     sort(t.begin(), t.end());
-    // cout << "t = "; for (int num : t) cout << num << " "; cout << "\n";
 
-    vector<vector<int>> mem(n+1, vector<int>(2 * n + 1, 1e9));
+    vector<vector<int>> mem(n+1, vector<int>(min(300, 2 * n), 1e9));  // the latest time we'd ever need to put out a dish is 299
     fill(mem[0].begin(), mem[0].end(), 0);
     for (int i = 1; i <= n; ++i) {
-        int time = t[i-1];
-        for (int j = 1; j <= 2 * n; ++j) {
-            mem[i][j] = min(mem[i][j-1], mem[i-1][j-1] + abs(j - time));
+        for (int j = 1; j <= mem[0].size() - 1; ++j) {
+            mem[i][j] = min(
+                (j == 0 ? 1e9 : mem[i-1][j-1]) + abs(j - t[i-1]),  // choose to put out the dish now
+                j == 0 ? 1e9 : mem[i][j-1]  // choose to put out the dish earlier
+            );
         }
     }
-    // for (int i = 0; i <= n; ++i) {
-    //     cout << "i="<<i<<":\t";
-    //     for (int j = 0; j <= 2*n; ++j) {
-    //         cout << mem[i][j] << " ";
-    //     }
-    //     cout << "\n";
-    // }
-
-    cout << mem[n][2*n] << "\n";
+    cout << mem[n].back() << '\n';
 }
 
 int main() {
