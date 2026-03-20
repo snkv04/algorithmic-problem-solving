@@ -122,6 +122,7 @@ void solve() {
         system, such as base-10.) this same idea can actually be applied in reverse--namely, once the AND goes
         lower than the XOR, then we cannot salvage it anymore--which is what the editorial solution does. so,
         both ways are valid.
+        - the number of ways that we can move from a DP state to another state can be more than 1.
     */
 
     // reads in input
