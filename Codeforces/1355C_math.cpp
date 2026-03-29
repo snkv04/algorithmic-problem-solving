@@ -77,6 +77,9 @@ void solve() {
             y_{min,all} fall in relation to [B, C]
         - as a result, we can calculate the number of (y, z) in O(1) for each x, so just iterate over each
         value of x
+    - generalized ideas for the future:
+        - start with fixing as many things as possible to simplify the problem and identify a brute-force
+        solution, then loosen restrictions and find patterns
     */
 
     ll a, b, c, d;
