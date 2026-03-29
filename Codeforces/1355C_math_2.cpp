@@ -1,0 +1,100 @@
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+using ld = long double;
+
+int MOD = (int) 1e9 + 7; // 998244353;
+int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
+
+template <typename T1, typename T2>
+std::ostream& operator<<(std::ostream &os, const std::pair<T1, T2> &p) {
+    os << "(" << p.first << ", " << p.second << ")";
+    return os;
+}
+
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream &os, const std::array<T, N> &c) {
+    os << "[";
+    for (const auto &elem : c) {
+        os << elem << ",";
+    }
+    os << "]";
+    return os;
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream &os, const std::vector<T> &c) {
+    os << "[";
+    for (const auto &elem : c) {
+        os << elem << ",";
+    }
+    os << "]";
+    return os;
+}
+
+template <typename T>
+std::istream& operator>>(std::istream &is, std::vector<T> &v) {
+    for (size_t i = 0; i < v.size(); ++i) {
+        is >> v[i];
+    }
+    return is;
+}
+
+ll gcd(ll a, ll b) {
+    if (a < 0) a = -a;
+    if (b < 0) b = -b;
+    ll A = max(a, b), B = min(a, b);
+    while (B != 0) {
+        ll R = A % B;
+        A = B;
+        B = R;
+    }
+    return A;
+}
+
+ll lcm(ll a, ll b) {
+    if (a < 0) a = -a;
+    if (b < 0) b = -b;
+    return a / gcd(a, b) * b;
+}
+
+void solve() {
+    ll a, b, c, d;
+    cin >> a >> b >> c >> d;
+    ll numy = c - b + 1, numx = b - a + 1;
+    ll ans = 0;
+    for (ll z = c; z <= d; ++z) {
+        ll y_minany = z - b + 1, y_minall = z - a + 1;
+        if (y_minany > c) continue;
+
+        if (y_minany < b) {
+            if (y_minall <= b) {
+                ans += numy * numx;
+            } else {
+                ll width = min(c, y_minall) - y_minany + 1;
+                ans += width * (width + 1) / 2;
+                width = (b - 1) - y_minany + 1;
+                ans -= width * (width + 1) / 2;
+                ans += max(0LL, c - y_minall) * numx;
+            }
+        } else {
+            ll width = min(c, y_minall) - y_minany + 1;
+            ans += width * (width + 1) / 2;
+            ans += max(0LL, c - y_minall) * numx;
+        }
+    }
+    cout << ans << endl;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int t = 1;
+    // cin >> t;
+    while (t--) {
+        solve();
+    }
+
+    return 0;
+}
