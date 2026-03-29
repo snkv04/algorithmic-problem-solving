@@ -59,6 +59,26 @@ ll lcm(ll a, ll b) {
 }
 
 void solve() {
+    /*
+    - problem:
+        - find the number of triples (x, y, z) such that:
+            - x falls in the range [A, B]
+            - y falls in the range [B, C]
+            - z falls in the range [C, D]
+            - sticks with lengths of x, y, and z form a triangle
+    - solution:
+        - observe that if x and y are fixed, then we can count the number of valid z in O(1), as it's
+        just the number of z < x+y that fall into [C, D]
+        - then, observe that if x is fixed, then we can find the minimum y value y_{min,any} that allows
+        ANY values of z, find the minimum y value y_{min,all} that allows ALL values of z, then count the
+        number of (y, z) pairs between those as a triangle (with a Gaussian sum) and the number of (y, z)
+        pairs after y_{min,all} as a rectangle with a simple product
+            - the only difficulty is in dealing with edge cases with regard to where y_{min,any} and
+            y_{min,all} fall in relation to [B, C]
+        - as a result, we can calculate the number of (y, z) in O(1) for each x, so just iterate over each
+        value of x
+    */
+
     ll a, b, c, d;
     cin >> a >> b >> c >> d;
     ll numy = c - b + 1, numz = d - c + 1;
