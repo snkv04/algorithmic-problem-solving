@@ -125,7 +125,12 @@ void solve() {
         - there are 2 ways of implementing that DP:
             - we separate out the "1" term into a closed-form nCr(n, 2), and add that to
             (sum across (all pairs (i, j) where i != j) of dist(i, j)), then use DP for the second part
+                - in simpler terms, this calculates the "edge distance" using DP, which measures the length of
+                a path as the number of edges on that path
             - we can directly do DP to find (sum across all i of (sum across all j != i of (1 + dist(i, j))))
+                - in simpler terms, this calculates the "node distance" using DP, which measures the length of
+                a path as the number of nodes on that path (which is just dist(i, j) + 1, where dist(i, j) is
+                the edge distance between nodes i and j)
         - this solution implements the first idea; the other solution implements the second idea
     */
 
