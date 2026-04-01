@@ -20,32 +20,19 @@ void print_container(const Container &c, string prefix = "", std::ostream &os = 
     os << "]" << endl;
 }
 
+template <typename T>
+std::istream& operator>>(std::istream &is, std::vector<T> &v) {
+    for (auto &elem : v) is >> elem;
+    return is;
+}
+
 struct SegmentTree {
 private:
     int n;
     vector<ll> t;
-    vector<int> a;
 
 public:
-    SegmentTree(const vector<int> &arr) {
-        n = arr.size();
-        a = arr;
-        t.resize(4 * n);
-        fill(t.begin(), t.end(), 0);
-        build(1, 0, n - 1);
-    }
-
-    void build(int v, int l, int r) {
-        if (l == r) {
-            t[v] = a[l];
-            return;
-        }
-
-        int m = l + (r - l) / 2;
-        build(2 * v, l, m);
-        build(2 * v + 1, m + 1, r);
-        t[v] = t[2 * v] + t[2 * v + 1];
-    }
+    SegmentTree(int n) : n(n), t(4 * n, 0) {}
 
     ll _query(int v, int l, int r, int ql, int qr) {
         if (r < ql || qr < l) {
@@ -85,44 +72,63 @@ public:
 };
 
 void solve() {
+    /*
+    - problem:
+        - we have two arrays, filled with distinct integers
+        - in a single operation, we pick some distance, and swap two elements in a with that distance (measured
+        by index, not by value, lol) and swap two elements in b with that distance
+        - is it possible to make the arrays the same?
+    - solution:
+        - first, we reduce the problem by dealing with simpler operations
+            - observe that we can perform any operation by using only primitive operations of swapping adjacent
+            elements, so we can reduce the problem by treating all operations as if they're the primitive ones
+        - then, we reduce the problem into checking that the inversion parity of A and B are the same
+            - why? A doesn't need to change, so the number of swaps we perform on it should be even (so we can
+            just "swap" the same 2 adjacent elements repeatedly)
+            - since the number of swaps we perform on B needs to be even, the final inversion parity needs to
+            be equal to A, so the initial inversion parity needs to be equal to that of A
+    - details:
+        - in essence, checking that the inversion parity of the two arrays is the same comes down to applying an
+        index mapping on one array that makes the inversion parity even (specifically, 0, by sorting A), applying
+        the same index mapping on the other array, then ensuring that the inversion parity of the second array is
+        also even
+    */
+
+    // reads in input
     int n;
     cin >> n;
     vector<int> a(n), b(n);
-    for (int i = 0; i < 2*n; ++i) {
-        if (i < n) cin >> a[i];
-        else cin >> b[i-n];
-    }
+    cin >> a >> b;
 
-    vector<pair<int, int>> both;
-    for (int i = 0; i < n; ++i) both.push_back(make_pair(a[i], b[i]));
-    sort(both.begin(), both.end());
+    // sorts A and B together by A, so we get a new modified B that we need to transform into a sorted B
+    // (instead of transforming B into A)
+    vector<pair<int, int>> together;
+    for (int i = 0; i < n; ++i) together.push_back({a[i], b[i]});
+    sort(together.begin(), together.end());
 
+    // given this modified B, we find the indices in increasing order of array value, solely for finding
+    // inversion count using segment tree
     vector<pair<int, int>> sorted_by_b;
-    for (int i = 0; i < n; ++i) {
-        sorted_by_b.push_back(make_pair(i, both[i].second));
-    }
-    sort(sorted_by_b.begin(), sorted_by_b.end(), [](const pair<int, int> &a, const pair<int, int> &b) {
-        return a.second < b.second;
-    });
+    for (int i = 0; i < n; ++i) sorted_by_b.push_back({together[i].second, i});
+    sort(sorted_by_b.begin(), sorted_by_b.end());
 
+    // finds inversion count using segment tree
     ll inversions = 0;
-    vector<int> v(n);
-    SegmentTree st(v);
+    SegmentTree st(n);
     for (int i = 0; i < n; ++i) {
-        int idx = sorted_by_b[i].first;
-        inversions += st.query(idx, n-1);
+        int idx = sorted_by_b[i].second;
+        inversions += st.query(idx, n - 1);
         st.update(idx, 1);
     }
 
-    // check multiset
-    bool same_multiset = true; sort(a.begin(), a.end()); sort(b.begin(), b.end());
-    for (int i = 0; i < n; ++i) {
-        if (a[i] != b[i]) {
-            same_multiset = false;
-            break;
-        }
-    }
-    cout << ((same_multiset && (inversions % 2 == 0)) ? "YES" : "NO") << "\n";
+    // just checks that A and B hold the same elements
+    bool same_multiset = true;
+    sort(a.begin(), a.end());
+    sort(b.begin(), b.end());
+    for (int i = 0; i < n; ++i) if (a[i] != b[i]) { same_multiset = false; break; }
+
+    // outputs final answer
+    cout << ((same_multiset && !(inversions % 2)) ? "YES" : "NO") << endl;
 }
 
 int main() {
