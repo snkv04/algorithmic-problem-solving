@@ -92,6 +92,7 @@ void solve() {
         index mapping on one array that makes the inversion parity even (specifically, 0, by sorting A), applying
         the same index mapping on the other array, then ensuring that the inversion parity of the second array is
         also even
+        - however, it can also just be done directly
     */
 
     // reads in input
