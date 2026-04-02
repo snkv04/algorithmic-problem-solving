@@ -95,6 +95,7 @@ void solve() {
                 a bit to the left by carrying over. on and on. in this view, the bits affected when adding b_i
                 only overlap with the bits affected when adding b_{i-1} and b_{i+1}.
             so probably the second one, which just goes left-to-right, is simpler to think about.
+        - carrying over, as a whole, can be thought of as moving a bit to the left and possibly deleting some others
     */
 
     int u, v;
