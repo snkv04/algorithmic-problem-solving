@@ -119,6 +119,14 @@ void solve() {
             - if there aren't, then that means that we are able to connect the whole graph with edges
             having weight <= k. then, we can take a single edge with weight as close to k as possible,
             add it to the MST, and remove an edge from the MST to get our final optimal spanning tree
+    - details:
+        - instead of getting the MST from the original edges then summing up the weights of the MST's
+        edges based on a particular rule, we can reassign the edges' weights by that rule and then take
+        the MST using those new edges. why? the ordering of edges by weight does not change, so the MST
+        itself does not change, but this version is more logically aligned with the standard idea of
+        finding an MST and summing up its edge weights. so, in a way, it's more modular: reassign all
+        edge weights, then run classical MST algorithm + take sum of weights. this version is implemented
+        in the other solution.
     - generalized ideas for the future:
         - we can observe that in the first case, it's easy but important to mentally prove that the MST
         is optimal. to do this, assume that there's a better tree, and show that it can't be true. proof
