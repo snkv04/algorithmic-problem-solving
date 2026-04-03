@@ -100,7 +100,7 @@ void solve() {
             }
         }
         
-        // only push on the first pair from THIS queue to the OVERALL priority queue
+        // only push the first pair from THIS queue onto the OVERALL priority queue
         if (segments[i].size()) pq.push(make_pair(segments[i].front().first, i));
     }
 
