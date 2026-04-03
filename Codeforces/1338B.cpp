@@ -58,7 +58,7 @@ ll lcm(ll a, ll b) {
     return a / gcd(a, b) * b;
 }
 
-bool check_all_even_dists(vector<vector<int>> &adj) {
+bool check_all_even_dists_from_leaf(vector<vector<int>> &adj) {
     // roots the tree at a leaf
     int n = adj.size();
     int leaf = -1;
@@ -93,6 +93,37 @@ int find_non_leaf(vector<vector<int>> &adj) {
         if (adj[i].size() > 1)
             return i;
     throw std::logic_error("Tree with >= 3 nodes must have a non-leaf node");
+}
+
+bool check_all_leaf_dists_parity(vector<vector<int>> &adj) {
+    // finds a non-leaf node, then gets all distances from that non-leaf node
+    int root = find_non_leaf(adj);
+    int n = adj.size();
+    vector<int> dist(n, -1);
+    queue<int> q;
+    dist[root] = 0;
+    q.push(root);
+    while (q.size()) {
+        int node = q.front();
+        q.pop();
+
+        for (int next : adj[node]) {
+            if (dist[next] == -1) {
+                dist[next] = dist[node] + 1;
+                q.push(next);
+            }
+        }
+    }
+
+    // makes sure all leaves have the same parity of distance from the root
+    int parity = -1;
+    for (int i = 0; i < n; ++i) {
+        if (adj[i].size() == 1) {
+            if (parity == -1) parity = dist[i] % 2;
+            else if (dist[i] % 2 != parity) return false;
+        }
+    }
+    return true;
 }
 
 int dfs(int node, int parent, vector<vector<int>> &adj) {
@@ -173,6 +204,9 @@ void solve() {
     - details:
         - when the problem has to do with bitwise operations, it can help to simply think of numbers as
         arrangements of 0s and 1s
+        - alternatively, instead of rooting the tree at a leaf and making sure all distances from that leaf
+        to other leaves are even, we can root the tree at a non-leaf, and make sure all distances from that
+        node to leaves have the same parity
     */
 
     // reads in the tree
@@ -188,8 +222,9 @@ void solve() {
     }
 
     // gets minimum value
-    bool even = check_all_even_dists(adj);
-    int mn = even ? 1 : 3;
+    // bool even_dists_between_leaves = check_all_even_dists_from_leaf(adj);
+    bool even_dists_between_leaves = check_all_leaf_dists_parity(adj);
+    int mn = even_dists_between_leaves ? 1 : 3;
 
     // gets maximum value
     int root = find_non_leaf(adj);
