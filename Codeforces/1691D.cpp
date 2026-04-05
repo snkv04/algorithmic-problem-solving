@@ -158,8 +158,11 @@ void solve() {
             we can apply similar logic to the case where index i is our right bound
     - core idea:
         - plop a segment tree down on top of the array of prefix sums, in order to find the max in a certain range
-        - why only in a certain range? because we’re using prefix sums to find subarray sums, and the left bound
-        of the subarray is fixed
+        - why only in a certain range? because:
+            - we’re using prefix sums to find subarray sums
+            - the left bound of the subarray is fixed
+            - the rightmost index for the right bound of the subarray is also fixed
+            (due to wanting to ensure that the current element is the max element in the subarray)
     - details:
         - when using a monotonic stack, consider if we want to count equal elements as the “next greater” or not.
             - if we don’t, then [i, next(i)) can include indices j > i such that a[i] == a[j].
