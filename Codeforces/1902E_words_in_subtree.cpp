@@ -145,9 +145,9 @@ void solve() {
             #####
             our goal is to find the area. the slow way would be to iterate through columns, and find the height
             of each column. one fast way (which we do here) is to iterate through rows and find the number of
-            columns with height at least that row (using a trie) for each row. another fast way (which we don't
-            do here) is to iterate through rows and find the number of columns with height exactly equal to that
-            row (using a trie), multiplying it with the row's index, for each row.
+            columns with height at least that row (using a trie) for each row. another fast way (which we do in
+            the other solution) is to iterate through rows and find the number of columns with height exactly
+            equal to that row (using a trie), multiplying it with the row's index, for each row.
     - generalized ideas for the future:
         - it is simpler (notice a pattern?) to think of "shared prefix between reversed a and b" than to think of
         "shared reversed suffix of a and prefix of b", so do that
