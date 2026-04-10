@@ -3,6 +3,7 @@
 using namespace std;
 
 using ll = long long;
+using ull = unsigned long long;
 const int MOD = (int) 1e9 + 7;
 
 vector<vector<ll>> matmul(vector<vector<ll>> &a, vector<vector<ll>> &b) {
@@ -42,9 +43,16 @@ void solve() {
         }
     }
 
-    random_device rd;
-    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    uniform_int_distribution<int> dist(1, (int) 1e9);
+    // the seed defines the initial state of the random number generator
+    ull seed = std::chrono::steady_clock::now().time_since_epoch().count();
+    // the random number generator (the "engine") generates a stream of completely random integers,
+    // which is typically used for getting a random integer by drawing the next one in the stream
+    std::mt19937 rng(seed);
+    // the distribution just defines the shape that we sample numbers from; to actually get a number,
+    // we pass in the engine -> engine produces random number -> shape takes random number -> shape produces
+    // sampled value
+    std::uniform_int_distribution<int> dist(1, (int) 1e9);
+
     int tests = 25;
     for (int k = 1; k <= tests; ++k) {
         vector<vector<ll>> v(n, vector<ll>(1, 0));
