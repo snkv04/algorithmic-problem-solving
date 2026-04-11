@@ -4,26 +4,14 @@ using ll = long long;
 using ld = long double;
 
 int main() {
-    int N;
-    cin >> N;
-    vector<int> v(N);
-    for (int i = 0; i < N; ++i)
-    {
-        cin >> v[i];
-    }
-    
-    sort(v.begin(), v.end());
+    int n;
+    cin >> n;
+    vector<int> p(n);
+    for (int i = 0; i < n; ++i) cin >> p[i];
+
     int ans = 0;
-    for (int i = 0; i < N; ++i)
-    {
-        if (i < (N / 2 + 1))
-        {
-            ans += (v[i] / 2);
-        }
-        else
-        {
-            ans += v[i];
-        }
-    }
-    cout << ans;
+    sort(p.begin(), p.end());
+    for (int i = 0; i < (n + 1) / 2; ++i) ans += p[i] / 2;
+    for (int i = (n + 1) / 2; i < n; ++i) ans += p[i];
+    cout << ans << endl;
 }
