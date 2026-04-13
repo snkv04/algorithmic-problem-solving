@@ -2,6 +2,7 @@
 using namespace std;
 
 using ll = long long;
+using ld = long double;
 int MOD = (int) 1e9 + 7; // 998244353;
 int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
 
@@ -18,6 +19,14 @@ void print_container(const Container &c, string prefix = "", std::ostream &os = 
         os << elem << ",";
     }
     os << "]" << endl;
+}
+
+template <typename T>
+std::istream& operator>>(std::istream &is, std::vector<T> &v) {
+    for (int i = 0; i < v.size(); ++i) {
+        is >> v[i];
+    }
+    return is;
 }
 
 struct SegmentTree {
@@ -133,37 +142,47 @@ void solve() {
     reference itself should be pretty small)
     */
 
+    /*
+    - concise summary:
+        - greedily assume that if we are going to select k questions, then they will be the k highest-probability
+        ones. basically, for a fixed k, the ones we select are fixed
+        - then, use DP to find the probability that we solve n questions and answer k of them correctly, and obtain
+        our probability of passing the test (for each number of questions we can solve) from that
+            - alternatively, that we solve n questions and get k points; implementation is different, but
+            core logic is isomorphic
+    */
     int n, k;
     cin >> n >> k;
-    vector<double> p(n); for (int i = 0; i < n; ++i) cin >> p[i];
+    vector<ld> p(n);
+    cin >> p;
+   
     sort(p.begin(), p.end());
     reverse(p.begin(), p.end());
 
-    vector<vector<double>> dp(n+1, vector<double>(2*n+1, 0));
-    dp[0][n] = 1;
+    vector<vector<ld>> mem(n + 1, vector<ld>(n + 1, 0));
+    mem[0][0] = 1.0;
     for (int i = 1; i <= n; ++i) {
-        for (int j = 0; j <= 2*n; ++j) {
-            if (j) dp[i][j] += p[i-1] * dp[i-1][j-1];
-            if (j < 2 * n) dp[i][j] += (1 - p[i-1]) * dp[i-1][j+1];
-        }
-    }
-    // cout << "dp = \n";
-    // for (int i = 0; i <= n; ++i) {
-    //     for (int j = 0; j <= 2 * n; ++j) {
-    //         cout << dp[i][j] << " ";
-    //     }
-    //     cout << endl;
-    // }
+        for (int j = 0; j <= i; ++j) {
+            // answered correctly
+            if (j) {
+                mem[i][j] = p[i - 1] * mem[i - 1][j - 1];
+            }
 
-    double best = 0;
-    for (int i = 1; i <= n; ++i) {
-        double curr = 0;
-        for (int j = n+k; j <= 2 * n; ++j) {
-            curr += dp[i][j];
+            // answered incorrectly
+            mem[i][j] += (1 - p[i - 1]) * mem[i - 1][j];
         }
-        best = max(best, curr);
     }
-    cout << best;
+
+    ld best = 0;
+    for (int answering = k; answering <= n; ++answering) {
+        ld prob_pass = 0;
+        // +1 for correct, -1 for incorrect
+        for (int correct = answering; correct - (answering - correct) >= k; --correct) {
+            prob_pass += mem[answering][correct];
+        }
+        best = max(best, prob_pass);
+    }
+    cout << fixed << setprecision(12) << best << endl;
 }
 
 int main() {
