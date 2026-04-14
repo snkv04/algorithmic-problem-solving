@@ -2,46 +2,25 @@
 using namespace std;
 
 void solve() {
-    int n;
-    int k;
+    int n, k;
     cin >> n >> k;
-    vector<long long> arr(n);
-    for (int i = 0; i < n; ++i)
-    {
-        cin >> arr[i];
+    vector<int> x(n);
+    for (int i = 0; i < n; ++i) cin >> x[i];
+    sort(x.begin(), x.end());
+
+    vector<long long> pref(n + 1, 0), prefsq(n + 1, 0);
+    for (int i = 1; i <= n; ++i) {
+        pref[i] = pref[i - 1] + x[i - 1];
+        prefsq[i] = prefsq[i - 1] + 1LL * x[i - 1] * x[i - 1];
     }
 
-    sort(arr.begin(), arr.end());
-
-    long long sum = 0;
-    long long sum_squares = 0;
-    for (int i = 0; i < k; ++i)
-    {
-        sum += arr[i];
-        sum_squares += arr[i]*arr[i];
+    long double ans = 1e18;
+    for (int i = k; i <= n; ++i) {
+        long double mean = (long double) (pref[i] - pref[i - k]) / k;
+        long double badness = prefsq[i] - prefsq[i - k] - 2 * mean * (pref[i] - pref[i - k]) + mean * mean * k;
+        ans = min(ans, badness);
     }
-
-    long double minVariance = -1;
-    for (int i = 0; i < n - k + 1; ++i)
-    {
-        long double average = sum / (double) k;
-        long double variance = 0.0;
-        variance = sum_squares + k * average * average - 2.0 * average * sum;
-        if (variance < minVariance || minVariance == -1)
-        {
-            minVariance = variance;
-        }
-
-        sum -= arr[i];
-        sum_squares -= arr[i]*arr[i];
-        if (k + i < n)
-        {
-            sum += arr[k + i];
-            sum_squares += arr[k+i]*arr[k+i];
-        }
-    }
-
-    cout << fixed << setprecision(12) << minVariance;
+    cout << fixed << setprecision(12) << ans << endl;
 }
 
 int main() {
