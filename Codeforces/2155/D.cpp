@@ -85,23 +85,45 @@ public:
 };
 
 void solve() {
+    /*
+    - problem:
+        - we have n batteries. a of them work.
+        - in a single query, we can ask about 2 batteries, and we will be told if both of them work or at least
+        one of them doesn't.
+        - find a pair of working batteries in at most floor(n^2 / a) queries.
+    - solution:
+        - there are (n - a) dead batteries. we can distribute them into the "gaps" between adjacent pairs of working
+        batteries (which we can think of as wrapping around in a circle). then, by the pigeonhole principle,
+        there exists at least one pair of batteries whose distance is at most
+        (n - a) / a + 1 = n / a - 1 + 1 = n / a. since the distance is an integer, it is in fact at most
+        floor(n / a). that bound is exact.
+        - therefore, we can iterate through distances, and for each, check all pairs that are that distance away.
+        that will take at most n * floor(n / a) queries, which is <= floor(n^2 / a) queries, as desired.
+    - notes:
+        - in a query, we are only told if both work. if it fails, we don't know if one of them work or neither of
+        them work. we only know FOR CERTAIN that a battery doesn't work if we test it against all other batteries
+        and all queries return false, but that brute-force would require too many queries, because in the worst
+        case, the only 2 working batteries are the 2 last ones and we'd time out (of queries). so, we can't
+        brute-force over each battery that could show up as the first in a pair. instead, we brute-force over
+        distances, which is fine due to the distance bound explained above.
+    */
+
     int n;
     cin >> n;
 
-    for (int i = 1; i <= n-1; ++i) {
-        for (int j = 1; j <= i; ++j) {
-            for (int k = j; k + i <= n; k += i) {
-                cout << k << " " << k + i << endl;
-                int result; cin >> result;
-                if (result == 1) {
-                    return;
-                } else if (result == -1) {
-                    std::exit(1);
-                }
+    for (int i = 1; i <= n - 1; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            int k = (j + i - 1) % n + 1;
+            cout << j << " " << k << endl;
+            int result;
+            cin >> result;
+            if (result == 1) {
+                return;
+            } else if (result == -1) {
+                std::exit(1);
             }
         }
     }
-    // cout << "got here\n";
 }
 
 int main() {
