@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
 // differs from std::multiset<T> in that all objects with identical keys are considered identical,
-// so then count() is O(1)
+// so then count() is O(1) instead of up to O(frequency of key)
 template <typename T>
 struct Multiset {
     void add(T object) {
