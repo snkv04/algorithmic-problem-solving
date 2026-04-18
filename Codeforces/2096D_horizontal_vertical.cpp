@@ -111,6 +111,11 @@ void solve() {
         - another way to solve the problem, as given in the editorial, is to observe that instead of using a square
         operation and observing the invariant parity of each row and column, we can use the given operation and
         observe the invariant parity of each column and down-right diagonal
+            - this is implemented in the other solution
+        - we start with all rows except 1 having a parity of even, and all cols except 1 having a parity of even.
+        we run a bunch of operations, but this does not change the parity of ANY row or column. so, we can uniquely
+        find the row and col that INITIALLY had a parity of odd by finding the row and col that FINALLY had a parity
+        of odd.
     */
 
     int n;
