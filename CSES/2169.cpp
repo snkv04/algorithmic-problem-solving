@@ -154,6 +154,8 @@ void solve() {
         - when processing segments for the task of counting how many segments are inside the current segment,
         if we are on a segment [l_i, r_i], we want the right end of all previous segments to be to the left
         of the right end of our current segment
+            - if we assume that as a given, then the "activation" logic with segtree is pretty straightforward:
+            one order is assumed due to how we iterate, and the other order is what the segtree is keyed on
         - when processing segments for the task of counting how many segments the current one's inside of,
         if we are on some segment, we want the right end of all previous segments to be to the right of the
         current segment's right end
