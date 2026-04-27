@@ -64,6 +64,11 @@ void solve() {
     vector<int> t(n);
     cin >> t;
 
+    /*
+    - can't move anything to the left; can only move times (patient arrival times) to the right
+    - so, start at rightmost end, and repeatedly: start a window, and pull as many times into the
+    window as possible
+    */
     int i = n - 1, ans = 0;
     while (i >= 0) {
         ++ans;
