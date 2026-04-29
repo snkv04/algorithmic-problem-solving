@@ -63,47 +63,41 @@ void solve() {
     cin >> n >> k;
     vector<int> a(n), cold(k), hot(k);
     cin >> a >> cold >> hot;
-    a.insert(a.begin(), 0);
+    a.push_back(0);
     cold.insert(cold.begin(), 0);
     hot.insert(hot.begin(), 0);
 
     /*
-    - write it so simply that i can easily memorize it
-    - mem[i][j] = minimum cost on prefix ending at index i, where we assume program i is on the black CPU
-    and j is the color of the last program on the white CPU
+    - mem[i][j] = minimum cost on suffix starting at index i, where we assume program i is on the black CPU,
+    we assume i is having a cold start (nothing before it), and j is the color of the very first program
+    on the white CPU
+    - for a given index, if we look at the color of the next program on the same CPU, we can decide whether
+    we'll keep that next program as cold or switch it to hot
+        - this is feasible, since we can just always assume something is cold at the start of a suffix,
+        and move it to hot by taking the difference between costs
+        - then, we'll add the cost of the current program by again assuming that it's cold
+        - in implementation, it doesn't actually matter if we "update next to be hot" or "set current to be
+        hot", because it's the same logic: each adjacent pair of same color will just be (2 * cold - (cold - hot))
     */
     vector<vector<ll>> mem(n + 1, vector<ll>(k + 1, 1e15));
-    mem[0][0] = 0;
-    for (int i = 1; i <= n; ++i) {
-        /*
-        - we put i and (i - 1) on the same CPU, so:
-            - the "last program on white CPU" information propagates
-            - the heat of the program depends on the connection between i and (i - 1)        
-        - algorithm: iterate over all "last program on white" from index (i - 1)
-        */
+    mem[n][0] = 0;
+    for (int i = n - 1; i >= 0; --i) {
+        // same CPU
         for (int j = 0; j <= k; ++j) {
-            mem[i][j] = mem[i - 1][j] + (a[i] == a[i - 1] ? hot[a[i]] : cold[a[i]]);
+            mem[i][j] = mem[i + 1][j] + (a[i] == a[i + 1] ? hot[a[i]] : cold[a[i]]);
         }
 
-        /*
-        - we put i and (i - 1) on different CPUs, so:
-            - we assumed (i - 1) was on black, but now we're assuming that i is on black, so we "flip"
-            the previous state, meaning that:
-                - the new "last program on white CPU" is (i - 1)
-                - the previous "last program on white" is now the last program on black,
-                so heat of program depends on connection between i and previous last on white
-        - algorithm: again, iterate over all "last program on white" from index (i - 1)
-        */
+        // diff CPU
         for (int j = 0; j <= k; ++j) {
-            mem[i][a[i - 1]] = min(
-                mem[i][a[i - 1]],
-                mem[i - 1][j] + (a[i] == j ? hot[a[i]] : cold[a[i]])
+            mem[i][a[i + 1]] = min(
+                mem[i][a[i + 1]],
+                mem[i + 1][j] + (a[i] == j ? hot[a[i]] : cold[a[i]])
             );
         }
     }
 
     ll ans = 1e15;
-    for (int j = 0; j <= k; ++j) ans = min(ans, mem[n][j]);
+    for (int j = 0; j <= k; ++j) ans = min(ans, mem[0][j]);
     cout << ans << endl;
 }
 
