@@ -40,6 +40,14 @@ std::istream& operator>>(std::istream &is, std::vector<T> &v) {
     return is;
 }
 
+template <typename T, size_t N>
+std::istream& operator>>(std::istream &is, std::array<T, N> &a) {
+    for (size_t i = 0; i < N; ++i) {
+        is >> a[i];
+    }
+    return is;
+}
+
 ll gcd(ll a, ll b) {
     if (a < 0) a = -a;
     if (b < 0) b = -b;
