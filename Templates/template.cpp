@@ -66,6 +66,20 @@ ll lcm(ll a, ll b) {
     return a / gcd(a, b) * b;
 }
 
+ll mod_pow(ll b, ll e) {
+    if (e == 0) return 1;
+    if (e % 2) return mod_pow(b, e - 1) * b % MOD;
+    else return mod_pow(b * b % MOD, e / 2) % MOD;
+}
+
+ll mod_inv(ll x) {
+    return mod_pow(x, MOD - 2);
+}
+
+ll mod_div(ll n, ll d) {
+    return n * mod_inv(d) % MOD;
+}
+
 void solve() {
     int n;
     cin >> n;
