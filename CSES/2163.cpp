@@ -140,6 +140,22 @@ struct SegmentTree {
         _update(1, 0, n - 1, idx, val);
     }
 
+    int walk(int want) {
+        int v = 1, l = 0, r = n - 1;
+        while (l != r) {
+            int m = (l + r) / 2;
+            if (tree[2 * v] >= want) {
+                v = 2 * v;
+                r = m;
+            } else {
+                want -= tree[2 * v];
+                v = 2 * v + 1;
+                l = m + 1;
+            }
+        }
+        return l;
+    }
+
 private:
     int n;
     std::vector<int> tree;
@@ -154,27 +170,14 @@ void solve() {
     int curr = 1;
     do {
         int want = (k % rem) + 1;
-        int lbound, rbound;
-        int toright = st.query(curr, n);
-        if (toright < want) {
-            lbound = 1;
-            rbound = curr;
-            want -= toright;
+        int to_right = st.query(curr, n);
+        if (to_right >= want) {
+            want += st.query(1, curr - 1);
         } else {
-            lbound = curr;
-            rbound = n;
+            want -= to_right;
         }
 
-        int lo = lbound, hi = rbound, idx = -1;
-        while (lo <= hi) {
-            int m = (lo + hi) / 2;
-            if (st.query(lbound, m) >= want) {
-                idx = m;
-                hi = m - 1;
-            } else {
-                lo = m + 1;
-            }
-        }
+        int idx = st.walk(want);
         cout << idx << " ";
         st.update(idx, 0);
         curr = idx;
