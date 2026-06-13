@@ -20,73 +20,9 @@ void print_container(const Container &c, string prefix = "", std::ostream &os = 
     os << "]" << endl;
 }
 
-struct SegmentTree {
-private:
-    int n;
-    vector<ll> t;
-    vector<int> a;
-
-public:
-    SegmentTree(const vector<int> &arr) {
-        n = arr.size();
-        a = arr;
-        t.resize(4 * n);
-        fill(t.begin(), t.end(), 0);
-        build(1, 0, n - 1);
-    }
-
-    void build(int v, int l, int r) {
-        if (l == r) {
-            t[v] = a[l];
-            return;
-        }
-
-        int m = l + (r - l) / 2;
-        build(2 * v, l, m);
-        build(2 * v + 1, m + 1, r);
-        t[v] = t[2 * v] + t[2 * v + 1];
-    }
-
-    ll _query(int v, int l, int r, int ql, int qr) {
-        if (r < ql || qr < l) {
-            return 0;
-        }
-        if (ql <= l && r <= qr) {
-            return t[v];
-        }
-
-        int m = l + (r - l) / 2;
-        return _query(2 * v, l, m, ql, qr)
-            + _query(2 * v + 1, m + 1, r, ql, qr);
-    }
-
-    ll query(int ql, int qr) {
-        return _query(1, 0, n - 1, ql, qr);
-    }
-
-    void _update(int v, int l, int r, int idx, int val) {
-        if (l == r) {
-            t[v] = val;
-            return;
-        }
-
-        int m = l + (r - l) / 2;
-        if (idx <= m) {
-            _update(2 * v, l, m, idx, val);
-        } else {
-            _update(2 * v + 1, m + 1, r, idx, val);
-        }
-        t[v] = t[2 * v] + t[2 * v + 1];
-    }
-
-    void update(int idx, int val) {
-        _update(1, 0, n - 1, idx, val);
-    }
-};
-
-struct Comp {
-    bool operator()(const pair<int, int> &p1, const pair<int, int> &p2) {
-        return p1.second > p2.second;
+struct Comparator {
+    bool operator()(const array<int, 3> &a, const array<int, 3> &b) {
+        return a[1] > b[1];
     }
 };
 
@@ -95,61 +31,53 @@ void solve() {
     cin >> n >> m >> t >> s >> g >> h;
     --s; --g; --h;
 
-    vector<pair<int, int>> adj[n];
-    for (int i = 0; i < n; ++i) adj[i] = vector<pair<int, int>>();
-    for (int i = 0; i < m; ++i) {
-        int a, b, d;
-        cin >> a >> b >> d;
+    vector<vector<pair<int, int>>> adj(n);
+    while (m--) {
+        int a, b, w;
+        cin >> a >> b >> w;
         --a; --b;
-        adj[a].push_back(make_pair(b, d));
-        adj[b].push_back(make_pair(a, d));
+        adj[a].push_back(make_pair(b, w));
+        adj[b].push_back(make_pair(a, w));
     }
 
-    set<int> dests;
+    vector<int> destinations;
     while (t--) {
-        int x;
-        cin >> x;
-        dests.insert(--x);
+        int node;
+        cin >> node;
+        --node;
+        destinations.push_back(node);
     }
+    sort(destinations.begin(), destinations.end());
 
     vector<int> dist(n, 1e9);
     dist[s] = 0;
-    priority_queue<pair<int, int>, vector<pair<int, int>>, Comp> pq;
-    pq.push(make_pair(s, 0));
+    priority_queue<array<int, 3>, vector<array<int, 3>>, Comparator> pq;
+    pq.push({s, 0, 0});
     vector<bool> marked(n, false);
     while (pq.size()) {
-        pair<int, int> p = pq.top();
+        auto [node, d, has_mark] = pq.top();
         pq.pop();
-        int node = p.first, distance = p.second;
-        if (distance > dist[node]) continue;  // outdated pair in the prioqueue
+        if (d > dist[node]) continue;
+        assert(d == dist[node]);
 
-        for (pair<int, int> next : adj[node]) {
-            int next_node = next.first, weight = next.second;
-            bool crossing = (node == g && next_node == h) || (node == h && next_node == g);
-            
-            if (dist[next_node] > distance + weight) {
-                dist[next_node] = distance + weight;
-                pq.push(make_pair(next_node, dist[next_node]));
+        for (auto [next_node, weight] : adj[node]) {
+            bool will_mark = has_mark || ((node == g && next_node == h) || (node == h && next_node == g));
 
-                if (crossing) marked[next_node] = true;
-                else {
-                    if (marked[node]) marked[next_node] = true;
-                    else marked[next_node] = false;
-                }
-            } else if (dist[next_node] == distance + weight) {
-                if (crossing || marked[node]) {
-                    pq.push(make_pair(next_node, dist[next_node]));
-                    marked[next_node] = true;
-                }
+            if (dist[next_node] > d + weight) {
+                marked[next_node] = will_mark;
+                dist[next_node] = d + weight;
+                pq.push({next_node, dist[next_node], marked[next_node]});
+            } else if (dist[next_node] == d + weight) {
+                marked[next_node] = marked[next_node] || will_mark;
+                pq.push({next_node, dist[next_node], marked[next_node]});
             }
         }
     }
-    // cout << "marked = ";
-    // for (bool val : marked) cout << val << " ";
-    // cout << "\n";
 
-    for (int node : dests) {
-        if (marked[node]) cout << (node + 1) << " ";
+    for (int dest : destinations) {
+        if (marked[dest]) {
+            cout << dest + 1 << " ";
+        }
     }
     cout << "\n";
 }
