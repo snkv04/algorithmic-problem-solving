@@ -86,9 +86,34 @@ ll mod_div(ll n, ll d) {
     return n * mod_inv(d) % MOD;
 }
 
+struct Comparator {
+    bool operator()(int a, int b) {
+        return a > b;
+    }
+};
+
 void solve() {
-    int n;
-    cin >> n;
+    int n, k;
+    cin >> n >> k;
+    vector<pair<int, int>> movies(n);
+    cin >> movies;
+    sort(
+        movies.begin(),
+        movies.end(),
+        [](const pair<int, int> &a, const pair<int, int> &b) { return a.second < b.second; }
+    );
+
+    multiset<int> available;
+    for (int i = 0; i < k; ++i) available.insert(0);
+    int ans = 0;
+    for (auto [l, r] : movies) {
+        auto it = available.upper_bound(l);
+        if (it == available.begin()) continue;
+        available.erase(--it);
+        available.insert(r);
+        ++ans;
+    }
+    cout << ans << endl;
 }
 
 int main() {
