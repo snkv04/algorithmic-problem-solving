@@ -87,8 +87,27 @@ ll mod_div(ll n, ll d) {
 }
 
 void solve() {
-    int n;
-    cin >> n;
+    int l, n, m;
+    cin >> l >> n >> m;
+    vector<int> a(l);
+    cin >> a;
+    vector<vector<int>> grid(n, vector<int>(m));
+    cin >> grid;
+
+    vector<vector<int>> last(n + 1, vector<int>(m + 1, 0));
+    for (int i = l - 1; i >= 0; --i) {
+        vector<vector<int>> curr(n + 1, vector<int>(m + 1, 0));
+        for (int r = n - 1; r >= 0; --r) {
+            for (int c = m - 1; c >= 0; --c) {
+                curr[r][c] = curr[r + 1][c] + curr[r][c + 1] - curr[r + 1][c + 1];
+                if (grid[r][c] == a[i] && last[r + 1][c + 1] == 0) {
+                    curr[r][c] += 1;
+                }
+            }
+        }
+        last = std::move(curr);
+    }
+    cout << (last[0][0] > 0 ? "T" : "N") << "\n";
 }
 
 int main() {
@@ -96,7 +115,7 @@ int main() {
     cin.tie(nullptr);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
