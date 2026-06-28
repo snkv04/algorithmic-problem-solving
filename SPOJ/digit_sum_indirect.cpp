@@ -93,11 +93,10 @@ ll fast_pow(ll b, ll e) {
 }
 
 ll solve(ll n) {
-    ll mem[17][10][2], mem2[17][10][2];
+    ll mem[17][10][2];
     for (int i = 0; i <= 16; ++i) {
         for (int j = 0; j < 10; ++j) {
             fill(mem[i][j], mem[i][j] + 2, 0);
-            fill(mem2[i][j], mem2[i][j] + 2, 0);
         }
     }
     mem[16][0][0] = 1;
