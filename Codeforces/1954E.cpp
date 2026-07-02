@@ -1,0 +1,146 @@
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+using ld = long double;
+
+int MOD = 1e9 + 7;  // 998244353;
+int di[] = {0, 0, 1, -1}, dj[] = {1, -1, 0, 0};
+
+template <typename T1, typename T2>
+std::ostream& operator<<(std::ostream &os, const std::pair<T1, T2> &p) {
+    os << "(" << p.first << ", " << p.second << ")";
+    return os;
+}
+
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream &os, const std::array<T, N> &c) {
+    os << "[";
+    for (const auto &elem : c) {
+        os << elem << ",";
+    }
+    os << "]";
+    return os;
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream &os, const std::vector<T> &c) {
+    os << "[";
+    for (const auto &elem : c) {
+        os << elem << ",";
+    }
+    os << "]";
+    return os;
+}
+
+template <typename T1, typename T2>
+std::istream& operator>>(std::istream &is, std::pair<T1, T2> &p) {
+    is >> p.first >> p.second;
+    return is;
+}
+
+template <typename T, size_t N>
+std::istream& operator>>(std::istream &is, std::array<T, N> &a) {
+    for (size_t i = 0; i < N; ++i) {
+        is >> a[i];
+    }
+    return is;
+}
+
+template <typename T>
+std::istream& operator>>(std::istream &is, std::vector<T> &v) {
+    for (size_t i = 0; i < v.size(); ++i) {
+        is >> v[i];
+    }
+    return is;
+}
+
+ll gcd(ll a, ll b) {
+    if (a < 0) a = -a;
+    if (b < 0) b = -b;
+    ll A = max(a, b), B = min(a, b);
+    while (B != 0) {
+        ll R = A % B;
+        A = B;
+        B = R;
+    }
+    return A;
+}
+
+ll lcm(ll a, ll b) {
+    if (a < 0) a = -a;
+    if (b < 0) b = -b;
+    return a / gcd(a, b) * b;
+}
+
+ll mod_pow(ll b, ll e) {
+    if (e == 0) return 1;
+    if (e % 2) return mod_pow(b, e - 1) * b % MOD;
+    else return mod_pow(b * b % MOD, e / 2) % MOD;
+}
+
+ll mod_inv(ll x) {
+    return mod_pow(x, MOD - 2);
+}
+
+ll mod_div(ll n, ll d) {
+    return n * mod_inv(d) % MOD;
+}
+
+void solve() {
+    int n;
+    cin >> n;
+    vector<int> a(n);
+    cin >> a;
+    a.insert(a.begin(), 0); a.push_back(0);
+    vector<int> b = a;
+
+    ll ans = 0;
+    int mx = 0;
+    for (int i = 1; i <= n; ++i) {
+        ans += max(0, a[i] - a[i - 1]);
+        mx = max(a[i], mx);
+    }
+    cout << ans << " ";
+    if (mx == 1) {
+        return;
+    }
+
+    vector<vector<int>> indices(mx + 1); for (int i = 1; i <= n; ++i) indices[2].push_back(i);
+    auto update = [&](int idx, int k) {
+        ans -= max(0, b[idx] - b[idx - 1]) + max(0, b[idx + 1] - b[idx]);
+        b[idx] = (a[idx] + k - 1) / k;
+        ans += max(0, b[idx] - b[idx - 1]) + max(0, b[idx + 1] - b[idx]);
+
+        if (b[idx] != 1) {
+            int next_val = (a[idx] + k) / (k + 1);
+            if (next_val != b[idx]) {
+                indices[k + 1].push_back(idx);
+            } else {
+                next_val -= 1;
+                int next_k = (a[idx] + next_val - 1) / next_val;
+                assert(next_k <= a[idx]);
+                indices[next_k].push_back(idx);
+            }
+        }
+    };
+    for (int k = 2; k <= mx; ++k) {
+        for (int idx : indices[k]) {
+            update(idx, k);
+        }
+        indices[k].clear();
+        cout << ans << " \n"[k == mx];
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int t = 1;
+    // cin >> t;
+    while (t--) {
+        solve();
+    }
+
+    return 0;
+}
