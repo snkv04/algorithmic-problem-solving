@@ -1,4 +1,5 @@
 #include <iostream>
+#include "assert.h"
 
 int main() {
     // allocated onto stack
@@ -73,6 +74,23 @@ int main() {
     // random concept: most vexing parse is when a (seeming) variable declaration is actually a function
     // declaration due to C++'s weird and somewhat unintuitive ambiguity resolution
     int a();
+
+    // main idea of pointer arithmetic: all operations are in terms of elements, not bytes.
+    // the byte counts are calculated based on the size of the datatype in bytes.
+    // arr[i] == i[arr] == *(arr + i)
+    // pointer arithmetic is at best sketchy and at worst undefined behavior when using it outside
+    // of the context of arrays.
+    double arr[5] = {1, 2, 3.0};
+    double *ptr = arr;
+    printf("ptr = %p, *ptr = %f\n", ptr, *ptr);
+    ++ptr;
+    printf("did ++ptr, ptr = %p, *ptr = %f\n", ptr, *ptr);
+    --ptr;
+    printf("undid ++ptr, ptr + 2 = %p, *(ptr + 2) = %f\n", ptr + 2, *(ptr + 2));
+    double *ptr2 = ptr + 3;
+    printf("ptr2 = %p, *ptr2 = %f\n", ptr2, *ptr2);
+    assert(ptr2 - ptr == 3);
+    assert(reinterpret_cast<size_t>(ptr2) - reinterpret_cast<size_t>(ptr) == 3 * 8);
 
     return 0;
 }
