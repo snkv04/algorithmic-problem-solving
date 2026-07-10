@@ -23,7 +23,7 @@ public:
     }
 
     // virtual destructor
-    // required in order to run ~Derived() when we use a "Base*" to point to an object of type Derived.
+    // when? if we use a "Base*" to point to an object of type Derived. why? in order to run ~Derived().
     // especially important when ~Derived() would trigger destructors of data that are in Derived but not Base.
     virtual ~Base() = default;  // "default" = "give me the compiler-generated function (here, destructor)"
 };
