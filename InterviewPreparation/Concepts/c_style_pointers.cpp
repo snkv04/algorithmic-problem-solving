@@ -13,6 +13,17 @@ int main() {
     printf("x = %d\n", x);
     printf("ptr = %p\n", ptr);
 
+    // pointer to heap variable
+    ptr = new int(5);
+    printf("ptr to heap = %p\n", ptr);
+    printf("value on heap = %d\n", *ptr);
+    delete ptr;
+    printf("after deletion, ptr to heap = %p\n", ptr);
+    // printf("after deletion, value on heap = %d\n", *ptr);  // undefined behavior :)
+    ptr = nullptr;
+    printf("after null-initialization, ptr = %p\n", ptr);
+    assert(ptr == 0x00000000);
+
     // 4 types of const ========================================
     // can change where it points to + value
     int y = 10, z = 20;
@@ -61,18 +72,8 @@ int main() {
     //       the value (int) is const, because it comes after the "int"
     // =========================================================
 
-    // pointer to heap variable
-    ptr = new int(5);
-    printf("ptr to heap = %p\n", ptr);
-    printf("value on heap = %d\n", *ptr);
-    delete ptr;
-    printf("after deletion, ptr to heap = %p\n", ptr);
-    // printf("after deletion, value on heap = %d\n", *ptr);  // undefined behavior :)
-    ptr = nullptr;
-    printf("after null-initialization, ptr = %p\n", ptr);
-    assert(ptr == 0x00000000);
-
-    // double pointers
+    // double pointers =========================================
+    // barebones example of double pointers
     x = 5;
     // int **ptr2 = &&x;  // doesn't compile; can't take the address of an rvalue ("&x")
     ptr = &x;
@@ -81,9 +82,12 @@ int main() {
     printf("ptr = %p\n", ptr);
     printf("ptr2 = %p\n", ptr2);
 
-    // use case of double pointers: modifying a pointer in any way with a function
-    // in general, if you want to modify something, you need either a reference to it or a pointer to it,
-    // because every function argument is either pass-by-reference or pass-by-value
+    // common use case of double pointers: modifying a pointer in any way with a function.
+    // in general, if you want to modify an argument in a function,
+    // you need either a reference to it or a pointer to it,
+    // because every function argument is either pass-by-reference or pass-by-value/pass-by-copy,
+    // and doing pass-by-value for a pointer to the object is sufficient to update the original one
+    // but doing pass-by-value for the object just makes you unable to touch the original one.
     x = 5; z = 20;
     const int *ptr3 = &x;
     assert(ptr3 == &x);
@@ -93,6 +97,7 @@ int main() {
     assert(ptr3 == &z);
     assert(*ptr3 == 20);
     printf("modified successfully!\n");
+    // =========================================================
 
     return 0;
 }

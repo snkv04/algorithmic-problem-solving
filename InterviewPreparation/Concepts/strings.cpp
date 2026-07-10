@@ -42,6 +42,7 @@ int main() {
     assert(view_substr.data() == str.data() + 13);
     std::string str_substr = str.substr(13, 4);
     assert(str_substr.data() != view_substr.data());  // the copy, a result of calling substr(), was made elsewhere
+    assert(str_substr == "long" && view_substr == "long");
 
     // std::basic_string is the underlying class.
     // std::string is just a specialized version of the class template std::basic_string; specifically,
