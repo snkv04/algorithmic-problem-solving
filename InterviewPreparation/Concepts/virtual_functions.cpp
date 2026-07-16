@@ -66,6 +66,14 @@ public:
         std::cout << std::endl;
     }
 
+    void print_derived_val() {
+        std::cout << "derived_val = ";
+        for (size_t i = 0; i < derived_val.size(); ++i) {
+            std::cout << derived_val[i] << ' ';
+        }
+        std::cout << std::endl;
+    }
+
     void print_smth() override {
         std::cout << "abstract_val = " << abstract_val << std::endl;
     }
@@ -81,6 +89,12 @@ int main() {
     b->print_personal_val();
     std::cout << std::endl;
     delete b;
+
+    // if we don't use a pointer, then the object gets "sliced",
+    // meaning that everything from Derived is sliced off
+    // and we can only access variables and functions from Base
+    Base b2 = Derived();
+    // b2.print_derived_val();  // compile-time error
 
     // abstract class can't be instantiated
     // Abstract a;  // compiler error!

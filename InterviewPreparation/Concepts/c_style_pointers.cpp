@@ -34,6 +34,7 @@ int main() {
     assert(*p == 20);
 
     // can point to new place, but can't update value it's pointing to
+    // (the value can still, of course, be updated, but just not through this pointer)
     // if const is before the type of the thing being pointed to, then the thing being pointed to is unmodifiable
     y = 10; z = 20;
     // example 1:
