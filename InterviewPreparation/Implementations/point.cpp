@@ -3,7 +3,8 @@
 
 // the class and its functions have already been declared in point.h,
 // so we only need to define the functions here,
-// which is done using the scope operator
+// which is done using the scope operator.
+// linker errors occur when a declaration is found, and it is used, but it's never defined.
 Point::Point() {}
 
 Point::Point(int x, int y) : x(x), y(y) {}
@@ -29,6 +30,14 @@ Point& Point::operator=(Point&& other) noexcept {
         other.x = other.y = 0;
     }
     return *this;
+}
+
+int Point::get_x() {
+    return x;
+}
+
+int Point::get_y() {
+    return y;
 }
 
 // not actually a function inside Point.

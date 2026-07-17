@@ -24,6 +24,10 @@ public:
 
     ~Point() = default;  // definition is already done here, so no need to do it in point.cpp
 
+    int get_x();
+
+    int get_y();
+
     friend std::ostream& operator<<(std::ostream &os, const Point &point);
 };
 
