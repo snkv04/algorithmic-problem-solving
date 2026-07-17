@@ -1,0 +1,10 @@
+just for quick personal reference
+- C++ language-specific information notes: https://docs.google.com/document/d/1ZWyM_1uhTvXgVrk4EjyuszegMpD9DMbBNJKDDkPVyRs/edit?usp=sharing
+- system design notes: https://docs.google.com/document/d/1qJPlFTyIBXqn1rmBg6jdPZnTlObV4jrBXJVaQc3B1lM/edit?usp=sharing
+- core operating systems topics:
+    - memory management + file systems: how does the OS store data?
+        - memory management notes: https://docs.google.com/document/d/1tb5lqlfzKyEWBQEp_uk5b8fO-i8wHcoRzyj5lWs1p8k/edit?usp=sharing
+    - concurrency: how does the OS run programs?
+        - concurrency notes: https://docs.google.com/document/d/1k2n8KG8EVKeT4nzpN7NSx_aSFUnxO8oIRgfQ24quSfU/edit?usp=sharing
+    - networking + I/O devices: how does the OS communicate with external systems?
+        - networking notes: https://docs.google.com/document/d/1HxPQ7OpBPzIf9gmSVtm1_rFSWqtv6jjDrWLGXYZEeW0/edit?usp=sharing
