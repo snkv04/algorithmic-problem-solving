@@ -1,4 +1,7 @@
+// don't need to include the file with the definitions, only the one with the declarations.
+// when compiling on command-line, only need to have all the ".cpp" files.
 #include <iostream>
+#include "point.h"
 
 namespace custom {
     // this can all be optimized by using malloc(), placement new, manually calling destructors, and free(),
@@ -178,44 +181,6 @@ namespace custom {
         }
     };
 }
-
-struct Point {
-    int x, y;
-
-    Point() {}
-
-    Point(int x, int y) : x(x), y(y) {}
-
-    Point(const Point& other) : x(other.x), y(other.y) {}
-
-    Point& operator=(const Point& other) {
-        if (this != &other) {
-            x = other.x;
-            y = other.y;
-        }
-        return *this;
-    }
-
-    Point(Point&& other) noexcept : x(other.x), y(other.y) {
-        other.x = other.y = 0;
-    }
-
-    Point& operator=(Point&& other) noexcept {
-        if (this != &other) {
-            x = other.x;
-            y = other.y;
-            other.x = other.y = 0;
-        }
-        return *this;
-    }
-
-    ~Point() = default;
-
-    friend std::ostream& operator<<(std::ostream &os, const Point &point) {
-        os << "(" << point.x << ", " << point.y << ")";
-        return os;
-    }
-};
 
 int main() {
     custom::vector<Point> vec(10);
