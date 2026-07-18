@@ -9,7 +9,6 @@ class Shape {
 protected:
     Color color;
 
-protected:
     Shape() : color(Color::GREEN) {}
 
     virtual std::string str() {
@@ -146,7 +145,8 @@ int main() {
     std::cout << std::endl;
 
     // reinterpret_cast reinterprets the bits.
-    // benefit: very fast, just like static_cast, because it gets cast at compile-time.
+    // benefit: very fast, just like static_cast,
+    // because no run-time type information (RTTI) is checked at run-time.
     // cost: very low amount of safety.
     int arr[4] = {1, 2, 4, 8};
     int* ptr = arr;
