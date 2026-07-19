@@ -4,7 +4,7 @@
 int main() {
     // allocated onto stack
     // "default-initialized": initialized to some garbage
-    // "value-initialized": initialized to that datatype's understanding of 0
+    // "value-initialized": initialized to that datatype's analogue of 0
     {
         // standard case of default-initialization
         int arr[5];
@@ -53,6 +53,7 @@ int main() {
         printf("\nalso, weird syntax: ");
         for (int i = 0; i < 5; ++i) printf("%d ", i[ptr]);
         printf("\n");
+        delete[] ptr;
     }
     {
         // value-initialization with "constructor" syntax
