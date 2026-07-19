@@ -6,6 +6,7 @@ namespace custom {
     // TODO: add custom deleter as a template parameter,
     // so we can use its operator() instead of `delete`,
     // which is useful if, e.g., the pointer is of type FILE*
+    // TODO: add a specialization for unique_ptrs to arrays (e.g., unique_ptr<int[]>)
     template <typename T>
     class unique_ptr {
         T *ptr;
@@ -73,10 +74,10 @@ namespace custom {
         // not that undefined behavior will not arise,
         // so it's safe to add here even though a double-free (from bad code) can cause UB.
         void reset(T *new_ptr) noexcept {
-            if (ptr) {
-                delete ptr;
+            if (ptr != new_ptr) {
+                if (ptr) delete ptr;
+                ptr = new_ptr;
             }
-            ptr = new_ptr;
         }
 
         void reset() noexcept {
@@ -106,6 +107,7 @@ int main() {
     std::cout << "after swapping, ptr2.get() = " << ptr2.get() << " and ptr3.get() = " << ptr3.get() << std::endl;
 
     assert(sizeof(ptr2) == sizeof(ptr2.get()));
+    std::cout << "assertion passed!" << std::endl;
 
     return 0;
 }
